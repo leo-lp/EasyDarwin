@@ -54,7 +54,6 @@ const std::string NGINX_HTTP_PORT = "10080";
 const std::string NGINX_RTMP_PORT = "10035";
 
 #define NONE_CONFIG_NGINX_WEB_PATH		"http://127.0.0.1:10080/"
-#define NONE_CONFIG_NGINX_RTMP_PATH		"rtmp://127.0.0.1:10035/live/"
 #define NONE_CONFIG_NGINX_LOCAL_PATH	"./nginx/www/"
 
 //*******************************
@@ -819,10 +818,9 @@ enum
 
 	easyPrefsServiceWANIPAddr				= 84,	// "service_wan_ip"		//char array
 	easyPrefsRTSPWANPort					= 85,	// "rtsp_wan_port"		//UInt16
+	easyPrefsRTMPWANPort					= 86,	// "rtmp_wan_port"		//UInt16
 
-	easyPrefsNginxWebPath					= 86,	// "nginx_web_path"		//char array
-	easyPrefsNginxRTMPPath					= 87,	// "nginx_rtmp_path"	//char array
-
+	easyPrefsNginxWebPath					= 87,	// "nginx_web_path"		//char array
 	qtssPrefsNumParams                      = 88
 };
 
@@ -1104,11 +1102,6 @@ typedef struct
 
 typedef struct
 {
-	char *	inStreamName;
-}Easy_FreeStream_Params;
-
-typedef struct
-{
     QTSS_ServerState            inNewState;
 } QTSS_StateChange_Params;
 
@@ -1205,24 +1198,11 @@ typedef struct
 
 typedef struct
 {
-    char*                       inStreamName;
-	char*						inRTSPUrl;
-	UInt32						inTimeout;
-	char*						outHLSUrl;
-} Easy_HLSOpen_Params;
-
-typedef struct
-{
-    char*                       inStreamName;
-} Easy_HLSClose_Params;
-
-
-typedef struct
-{
 	char*						inDevice;
 	UInt32						inChannel;
 	EasyStreamType				inStreamType;
 	char*						outUrl;
+	bool						outIsReady;
 }Easy_GetDeviceStream_Params;
 
 //redis module
@@ -1276,10 +1256,6 @@ typedef union
     QTSS_CloseFile_Params               closeFileParams;
     QTSS_RequestEventFile_Params        reqEventFileParams;
 
-	Easy_HLSOpen_Params					easyHLSOpenParams;
-	Easy_HLSClose_Params				easyHLSCloseParams;
-
-	Easy_FreeStream_Params				easyFreeStreamParams;
 	Easy_StreamInfo_Params              easyStreamInfoParams;
 	QTSS_GetAssociatedCMS_Params	    GetAssociatedCMSParams;
 	QTSS_JudgeStreamID_Params			JudgeStreamIDParams;
@@ -2067,28 +2043,17 @@ QTSS_Error    QTSS_Authorize(QTSS_RTSPRequestObject inAuthRequestObject, char** 
 void        QTSS_LockStdLib();
 void        QTSS_UnlockStdLib();
 
-// Start HLS Session
-QTSS_Error	Easy_StartHLSession(const char* inSessionName, const char* inURL, UInt32 inTimeout, char* outURL);
-// Stop HLS Session
-QTSS_Error	Easy_StopHLSession(const char* inSessionName);
 // Get HLS Sessions(json)
-void*	Easy_GetHLSessions();
 void*	Easy_GetRTSPPushSessions();
 
-void*   Easy_GetRTSPRecordSessions(char* inSessionName, UInt64 startTime, UInt64 endTime);
 #ifdef QTSS_OLDROUTINENAMES
 
-//
 // Legacy routines
-
-//
 // QTSS_AddAttribute has been replaced by QTSS_AddStaticAttribute
 QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inObjectType, const char* inAttributeName,
                                 void* inUnused);
 
 #endif
-
-
 
 #ifdef __cplusplus
 }

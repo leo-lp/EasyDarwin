@@ -30,7 +30,6 @@
 
 #include "ReflectorStream.h"
 #include "QTSSModuleUtils.h"
-#include "OSMemory.h"
 #include "SocketUtils.h"
 #include "RTCPPacket.h"
 #include "ReflectorSession.h"
@@ -65,10 +64,10 @@ UInt32                          ReflectorStream::sMaxPacketAgeMSec = 20000;
 UInt32                          ReflectorStream::sMaxFuturePacketSec = 60; // max packet future time
 UInt32                          ReflectorStream::sOverBufferInSec = 10;
 UInt32                          ReflectorStream::sBucketDelayInMsec = 73;
-bool                          ReflectorStream::sUsePacketReceiveTime = false;
+bool							ReflectorStream::sUsePacketReceiveTime = false;
 UInt32                          ReflectorStream::sFirstPacketOffsetMsec = 500;
 
-UInt32                          ReflectorStream::sRelocatePacketAgeMSec = 3000;
+UInt32                          ReflectorStream::sRelocatePacketAgeMSec = 1000;
 
 void ReflectorStream::Register()
 {
@@ -141,7 +140,7 @@ ReflectorStream::ReflectorStream(SourceInfo::StreamInfo* inInfo)
 	fEyeCount(0),
 	fFirst_RTCP_RTP_Time(0),
 	fFirst_RTCP_Arrival_Time(0),
-	fTransportType(qtssRTPTransportTypeUDP),
+	fTransportType(qtssRTPTransportTypeTCP),
 	fMyReflectorSession(NULL)
 {
 
@@ -248,10 +247,10 @@ void ReflectorStream::AllocateBucketArray(UInt32 inNumBuckets)
 {
 	Bucket* oldArray = fOutputArray;
 	//allocate the 2-dimensional array
-	fOutputArray = NEW Bucket[inNumBuckets];
+	fOutputArray = new Bucket[inNumBuckets];
 	for (UInt32 x = 0; x < inNumBuckets; x++)
 	{
-		fOutputArray[x] = NEW ReflectorOutput*[sBucketSize];
+		fOutputArray[x] = new ReflectorOutput*[sBucketSize];
 		::memset(fOutputArray[x], 0, sizeof(ReflectorOutput*) * sBucketSize);
 	}
 
@@ -875,7 +874,7 @@ void ReflectorSender::ReflectRelayPackets(SInt64* ioWakeupTime, OSQueue* inFreeQ
 					if (packetElem)	// show 'em what we got johnny
 					{
 						ReflectorPacket* 	thePacket = (ReflectorPacket*)packetElem->GetEnclosingObject();
-						printf("1st NEW packet from Sender sess 0x%lx time: %li, packetSeq %i\n", (SInt32)theOutput, (SInt32)thePacket->fTimeArrived, DGetPacketSeqNumber(&thePacket->fPacketPtr));
+						printf("1st new packet from Sender sess 0x%lx time: %li, packetSeq %i\n", (SInt32)theOutput, (SInt32)thePacket->fTimeArrived, DGetPacketSeqNumber(&thePacket->fPacketPtr));
 					}
 					else
 						printf("no new packets\n");
@@ -1307,6 +1306,7 @@ OSQueueElem* ReflectorSender::NeedRelocateBookMark(OSQueueElem* elem)
 			if (keyPacket->fTimeArrived > thePacket->fTimeArrived)
 			{
 				this->fStream->GetMyReflectorSession()->SetHasVideoKeyFrameUpdate(true);
+				//printf("NeedRelocateBookMark TTTTTTTTTTTTTTTTTTTTTTTTTT\n");
 				return fKeyFrameStartPacketElementPointer;
 			}
 		}
@@ -1579,8 +1579,8 @@ void ReflectorSocketPool::SetUDPSocketOptions(UDPSocketPair* inPair)
 
 UDPSocketPair* ReflectorSocketPool::ConstructUDPSocketPair()
 {
-	return NEW UDPSocketPair
-	(NEW ReflectorSocket(), NEW ReflectorSocket());
+	return new UDPSocketPair
+	(new ReflectorSocket(), new ReflectorSocket());
 }
 
 void ReflectorSocketPool::DestructUDPSocket(ReflectorSocket* socket)
@@ -1635,7 +1635,7 @@ ReflectorSocket::ReflectorSocket()
 	{
 		//If the local port # of this socket is odd, then all the packets
 		//used for this socket are rtcp packets.
-		ReflectorPacket* packet = NEW ReflectorPacket();
+		ReflectorPacket* packet = new ReflectorPacket();
 		fFreeQueue.EnQueue(&packet->fQueueElem);//put this packet onto the free queue
 	}
 }
@@ -2035,7 +2035,7 @@ ReflectorPacket* ReflectorSocket::GetPacket()
 	OSMutexLocker locker(this->GetDemuxer()->GetMutex());
 	if (fFreeQueue.GetLength() == 0)
 		//if the port number of this socket is odd, this packet is an RTCP packet.
-		return NEW ReflectorPacket();
+		return new ReflectorPacket();
 	else
 		return (ReflectorPacket*)fFreeQueue.DeQueue()->GetEnclosingObject();
 }

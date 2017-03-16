@@ -70,26 +70,21 @@ HTTPSession::~HTTPSession()
 	QTSS_RoleParams theParams;
 	theParams.rtspSessionClosingParams.inRTSPSession = this;
 
-	//会话断开时，调用模块进行一些停止的工作
 	for (UInt32 x = 0; x < QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPSessionClosingRole); x++)
 		(void)QTSServerInterface::GetModule(QTSSModule::kRTSPSessionClosingRole, x)->CallDispatch(QTSS_RTSPSessionClosing_Role, &theParams);
 
 	fLiveSession = false; //used in Clean up request to remove the RTP session.
 	this->CleanupRequest();// Make sure that all our objects are deleted
-	//if (fSessionType == qtssServiceSession)
-	//    QTSServerInterface::GetServer()->AlterCurrentServiceSessionCount(-1);
 
 }
 
 SInt64 HTTPSession::Run()
 {
-	//获取事件类型
 	EventFlags events = this->GetEvents();
 	QTSS_Error err = QTSS_NoErr;
 	// Some callbacks look for this struct in the thread object
 	OSThreadDataSetter theSetter(&fModuleState, nullptr);
 
-	//超时事件或者Kill事件，进入释放流程：清理 & 返回-1
 	if (events & Task::kKillEvent)
 		fLiveSession = false;
 
@@ -99,13 +94,11 @@ SInt64 HTTPSession::Run()
 		return -1;
 	}
 
-	//正常事件处理流程
 	while (this->IsLiveSession())
 	{
-		//报文处理以状态机的形式，可以方便多次处理同一个消息
 		switch (fState)
 		{
-		case kReadingFirstRequest://首次对Socket进行读取
+		case kReadingFirstRequest:
 			{
 				if ((err = fInputStream.ReadRequest()) == QTSS_NoErr)
 				{
@@ -131,10 +124,8 @@ SInt64 HTTPSession::Run()
 			continue;
 		case kReadingRequest://读取请求报文
 			{
-				//读取锁，已经在处理一个报文包时，不进行新网络报文的读取和处理
 				OSMutexLocker readMutexLocker(&fReadMutex);
 
-				//网络请求报文存储在fInputStream中
 				if ((err = fInputStream.ReadRequest()) == QTSS_NoErr)
 				{
 					//如果RequestStream返回QTSS_NoErr，就表示已经读取了目前所到达的网络数据
@@ -173,7 +164,6 @@ SInt64 HTTPSession::Run()
 				Assert(fInputStream.GetRequestBuffer());
 
 				Assert(fRequest == nullptr);
-				//根据具体请求报文构造HTTPRequest请求类
 				fRequest = new HTTPRequest(&QTSServerInterface::GetServerHeader(), fInputStream.GetRequestBuffer());
 
 				//在这里，我们已经读取了一个完整的Request，并准备进行请求的处理，直到响应报文发出
@@ -181,10 +171,8 @@ SInt64 HTTPSession::Run()
 				fReadMutex.Lock();
 				fSessionMutex.Lock();
 
-				//清空发送缓冲区
 				fOutputStream.ResetBytesWritten();
 
-				//网络请求超过了缓冲区，返回Bad Request
 				if (err == E2BIG)
 				{
 					//返回HTTP报文，错误码408
@@ -304,6 +292,7 @@ SInt64 HTTPSession::Run()
 				this->CleanupRequest();
 				fState = kReadingRequest;
 			}
+		default: break;
 		}
 	}
 
@@ -421,10 +410,10 @@ QTSS_Error HTTPSession::SetupRequest()
 					return execNetMsgCSGetRTSPLiveSessionsRESTful(fRequest->GetQueryString());
 				}
 
-				if (path[0] == "api" && path[1] == EASY_PROTOCOL_VERSION && path[2] == "getrecordlist")
-				{
-					return execNetMsgCSGetRTSPRecordSessionsRESTful(fRequest->GetQueryString());
-				}
+				//if (path[0] == "api" && path[1] == EASY_PROTOCOL_VERSION && path[2] == "getrecordlist")
+				//{
+				//	return execNetMsgCSGetRTSPRecordSessionsRESTful(fRequest->GetQueryString());
+				//}
 
 			}
 
@@ -604,10 +593,8 @@ QTSS_Error HTTPSession::execNetMsgCSGetRTSPLiveSessionsRESTful(const char* query
 		if (msgJson.Len)
 			httpAck.AppendContentLengthHeader(msgJson.Len);
 
-		// 响应完成后断开连接
 		httpAck.AppendConnectionCloseHeader();
 
-		// HTTP响应Body
 		char respHeader[2048] = { 0 };
 		StrPtrLen* ackPtr = httpAck.GetCompleteHTTPHeader();
 		strncpy(respHeader, ackPtr->Ptr, ackPtr->Len);
@@ -641,26 +628,21 @@ QTSS_Error HTTPSession::execNetMsgCSGetRTSPRecordSessionsRESTful(const char* que
 
 	do
 	{
-		// 获取响应Content
-		char* msgContent = static_cast<char*>(Easy_GetRTSPRecordSessions((char *)name, atoi(startTime), atoi(endTime)));
+		char* msgContent = NULL;
 
 		StrPtrLen msgJson(msgContent);
 
-		// 构造响应报文(HTTP头)
 		HTTPRequest httpAck(&QTSServerInterface::GetServerHeader(), httpResponseType);
 		httpAck.CreateResponseHeader(msgJson.Len ? httpOK : httpNotImplemented);
 		if (msgJson.Len)
 			httpAck.AppendContentLengthHeader(msgJson.Len);
 
-		// 响应完成后断开连接
 		httpAck.AppendConnectionCloseHeader();
 
-		// HTTP响应Body
 		char respHeader[2048] = { 0 };
 		StrPtrLen* ackPtr = httpAck.GetCompleteHTTPHeader();
 		strncpy(respHeader, ackPtr->Ptr, ackPtr->Len);
 
-		// HTTP响应Content
 		RTSPResponseStream *pOutputStream = GetOutputStream();
 		pOutputStream->Put(respHeader);
 		if (msgJson.Len > 0)
@@ -733,8 +715,8 @@ QTSS_Error HTTPSession::execNetMsgCSUsageAck()
 		Json::Value value;
 		value[EASY_TAG_HTTP_METHOD] = EASY_TAG_HTTP_GET;
 		value[EASY_TAG_ACTION] = "SetBaseConfig";
-		value[EASY_TAG_PARAMETER] = "NginxRTMPPath='rtmp://192.168.66.121:10035/live/'&NginxRootFolder='./nginx/www/'&NginxWebPath='http://192.168.1.53/'&RTSPLanPort=554&RTSPWanPort=10554&ServiceLanPort=10008&ServiceWanIP=192.168.66.121&ServiceWanPort=10008";
-		value[EASY_TAG_EXAMPLE] = "http://ip:port/api/[Version]/setbaseconfig?nginxrtmppath=xxx&nginxwebpath=xxx...";
+		value[EASY_TAG_PARAMETER] = "RTSPLanPort=554&RTSPWanPort=10554&ServiceLanPort=10008&ServiceWanIP=192.168.66.121&ServiceWanPort=10008";
+		value[EASY_TAG_EXAMPLE] = "http://ip:port/api/[Version]/setbaseconfig?RTSPWanPort=8554&ServiceWanIP=8.8.8.8...";
 		value[EASY_TAG_DESCRIPTION] = "set server base config";
 		(*proot)[EASY_TAG_ROOT][EASY_TAG_BODY][EASY_TAG_API].append(value);
 	}
@@ -742,9 +724,9 @@ QTSS_Error HTTPSession::execNetMsgCSUsageAck()
 	{
 		Json::Value value;
 		value[EASY_TAG_HTTP_METHOD] = EASY_TAG_HTTP_GET;
-		value[EASY_TAG_ACTION] = "GetLiveSessions";
+		value[EASY_TAG_ACTION] = "GetRTSPLiveSessions";
 		value[EASY_TAG_PARAMETER] = "";
-		value[EASY_TAG_EXAMPLE] = "http://ip:port/api/[Version]/getlivesessions";
+		value[EASY_TAG_EXAMPLE] = "http://ip:port/api/[Version]/getrtsplivesessions";
 		value[EASY_TAG_DESCRIPTION] = "get live sessions";
 		(*proot)[EASY_TAG_ROOT][EASY_TAG_BODY][EASY_TAG_API].append(value);
 	}
@@ -753,19 +735,9 @@ QTSS_Error HTTPSession::execNetMsgCSUsageAck()
 		Json::Value value;
 		value[EASY_TAG_HTTP_METHOD] = EASY_TAG_HTTP_GET;
 		value[EASY_TAG_ACTION] = "GetDeviceStream";
-		value[EASY_TAG_PARAMETER] = "device=[Serial]&channel=[Channel]&protocol=[RTSP/RTMP/HLS]&reserved=[0/1]";
-		value[EASY_TAG_EXAMPLE] = "http://ip:port/api/[Version]/getdevicestream?device=00001&channel=1&protocol=RTSP&reserved=0";
+		value[EASY_TAG_PARAMETER] = "device=[Serial]&channel=[Channel]&protocol=[RTSP]";
+		value[EASY_TAG_EXAMPLE] = "http://ip:port/api/[Version]/getdevicestream?device=00001&channel=1&protocol=RTSP";
 		value[EASY_TAG_DESCRIPTION] = "get device channel stream";
-		(*proot)[EASY_TAG_ROOT][EASY_TAG_BODY][EASY_TAG_API].append(value);
-	}
-
-	{
-		Json::Value value;
-		value[EASY_TAG_HTTP_METHOD] = EASY_TAG_HTTP_GET;
-		value[EASY_TAG_ACTION] = "LiveDeviceStream";
-		value[EASY_TAG_PARAMETER] = "device=[Serial]&channel=[Channel]&protocol=[RTSP/RTMP/HLS]&reserved=[0/1]";
-		value[EASY_TAG_EXAMPLE] = "http://ip:port/api/[Version]/livedevicestream?device=00001&channel=1&protocol=RTSP&reserved=0";
-		value[EASY_TAG_DESCRIPTION] = "keepalive device channel stream";
 		(*proot)[EASY_TAG_ROOT][EASY_TAG_BODY][EASY_TAG_API].append(value);
 	}
 
@@ -954,11 +926,12 @@ QTSS_Error HTTPSession::execNetMsgCSGetBaseConfigReqRESTful(const char* queryStr
 	body[EASY_TAG_CONFIG_SERVICE_LAN_IP] = lanip;
 
 	body[EASY_TAG_CONFIG_RTSP_WAN_PORT] = to_string(QTSServerInterface::GetServer()->GetPrefs()->GetRTSPWANPort());
+	body[EASY_TAG_CONFIG_RTMP_WAN_PORT] = to_string(QTSServerInterface::GetServer()->GetPrefs()->GetRTMPWANPort());
+
 	body[EASY_TAG_CONFIG_SERVICE_WAN_IP] = QTSServerInterface::GetServer()->GetPrefs()->GetServiceWANIP();
 
 	body[EASY_TAG_CONFIG_NGINX_ROOT_FOLDER] = QTSServerInterface::GetServer()->GetPrefs()->GetNginxRootFolder();
 	body[EASY_TAG_CONFIG_NGINX_WEB_PATH] = QTSServerInterface::GetServer()->GetPrefs()->GetNginxWebPath();
-	body[EASY_TAG_CONFIG_NGINX_RTMP_PATH] = QTSServerInterface::GetServer()->GetPrefs()->GetNginxRTMPPath();
 
 	body[EASY_TAG_CONFIG_SERVICE_LAN_PORT] = to_string(QTSServerInterface::GetServer()->GetPrefs()->GetServiceLanPort());
 	body[EASY_TAG_CONFIG_SERVICE_WAN_PORT] = to_string(QTSServerInterface::GetServer()->GetPrefs()->GetServiceWanPort());
@@ -1013,6 +986,14 @@ QTSS_Error HTTPSession::execNetMsgCSSetBaseConfigReqRESTful(const char* queryStr
 	//if (chLanIP)
 	//	(void)QTSS_SetValue(QTSServerInterface::GetServer()->GetPrefs(), qtssPrefsRTSPIPAddr, 0, (void*)chLanIP, strlen(chLanIP));
 
+	//2.EASY_TAG_CONFIG_RTSP_WAN_PORT
+	const char*	chRTMPWanPort = parList.DoFindCGIValueForParam(EASY_TAG_CONFIG_RTMP_WAN_PORT);
+	if (chRTMPWanPort)
+	{
+		UInt16 uRTMPWanPort = stoi(chRTMPWanPort);
+		(void)QTSS_SetValue(QTSServerInterface::GetServer()->GetPrefs(), easyPrefsRTMPWANPort, 0, &uRTMPWanPort, sizeof(uRTMPWanPort));
+	}
+
 	//4.EASY_TAG_CONFIG_SERVICE_WAN_IP
 	const char* chWanIP = parList.DoFindCGIValueForParam(EASY_TAG_CONFIG_SERVICE_WAN_IP);
 	if (chWanIP)
@@ -1042,19 +1023,8 @@ QTSS_Error HTTPSession::execNetMsgCSSetBaseConfigReqRESTful(const char* queryStr
 		(void)QTSS_SetValue(QTSServerInterface::GetServer()->GetPrefs(), easyPrefsNginxWebPath, 0, (void*)nginxWebPath.c_str(), nginxWebPath.size());
 	}
 
-	//7.EASY_TAG_CONFIG_NGINX_RTMP_PATH
-	const char* chNginxRTMPPath = parList.DoFindCGIValueForParam(EASY_TAG_CONFIG_NGINX_RTMP_PATH);
-	if (chNginxRTMPPath)
-	{
-		string nginxRTMPPath(chNginxRTMPPath);
-		if (nginxRTMPPath.back() != '\/')
-		{
-			nginxRTMPPath.push_back('\/');
-		}
-		(void)QTSS_SetValue(QTSServerInterface::GetServer()->GetPrefs(), easyPrefsNginxRTMPPath, 0, (void*)nginxRTMPPath.c_str(), nginxRTMPPath.size());
-	}
 
-	//8.EASY_TAG_CONFIG_SERVICE_LAN_PORT
+	//7.EASY_TAG_CONFIG_SERVICE_LAN_PORT
 	const char* chHTTPLanPort = parList.DoFindCGIValueForParam(EASY_TAG_CONFIG_SERVICE_LAN_PORT);
 	if (chHTTPLanPort)
 	{
@@ -1062,7 +1032,7 @@ QTSS_Error HTTPSession::execNetMsgCSSetBaseConfigReqRESTful(const char* queryStr
 		(void)QTSS_SetValue(QTSServerInterface::GetServer()->GetPrefs(), easyPrefsHTTPServiceLanPort, 0, &uHTTPLanPort, sizeof(uHTTPLanPort));
 	}
 
-	//9.EASY_TAG_CONFIG_SERVICE_WAN_PORT
+	//8.EASY_TAG_CONFIG_SERVICE_WAN_PORT
 	const char*	chHTTPWanPort = parList.DoFindCGIValueForParam(EASY_TAG_CONFIG_SERVICE_WAN_PORT);
 	if (chHTTPWanPort)
 	{
@@ -1100,7 +1070,11 @@ QTSS_Error HTTPSession::execNetMsgCSRestartServiceRESTful(const char* queryStrin
 		//}
 	}
 
-	exit(-2);
+#ifdef WIN32
+	::ExitProcess(0);
+#else
+	exit(0);
+#endif //__WIN32__
 }
 
 QTSS_Error HTTPSession::execNetMsgCSGetDeviceStreamReqRESTful(const char* queryString)
@@ -1133,6 +1107,8 @@ QTSS_Error HTTPSession::execNetMsgCSGetDeviceStreamReqRESTful(const char* queryS
 	outURL[0] = '\0';
 	QTSSCharArrayDeleter theHLSURLDeleter(outURL);
 
+	bool outIsReady = false;
+
 	int theErr = EASY_ERROR_SERVER_NOT_IMPLEMENTED;
 
 	do
@@ -1144,9 +1120,20 @@ QTSS_Error HTTPSession::execNetMsgCSGetDeviceStreamReqRESTful(const char* queryS
 		}
 
 		const char* chChannel = parList.DoFindCGIValueForParam(EASY_TAG_CHANNEL);
-		if (chChannel)
+		if (!chChannel || string(chChannel).empty())
 		{
-			theChannelNum = stoi(chChannel);
+			theChannelNum = 1;
+		}
+		else
+		{
+			try
+			{
+				theChannelNum = stoi(chChannel);
+			}
+			catch(...)
+			{
+				theChannelNum = 1;
+			}
 		}
 
 		if (!chProtocol)
@@ -1169,7 +1156,7 @@ QTSS_Error HTTPSession::execNetMsgCSGetDeviceStreamReqRESTful(const char* queryS
 		params.easyGetDeviceStreamParams.inChannel = theChannelNum;
 		params.easyGetDeviceStreamParams.inStreamType = streamType;
 		params.easyGetDeviceStreamParams.outUrl = outURL;
-
+		params.easyGetDeviceStreamParams.outIsReady = false;
 
 		UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kGetDeviceStreamRole);
 		for (UInt32 fCurrentModule = 0; fCurrentModule < numModules; fCurrentModule++)
@@ -1179,11 +1166,10 @@ QTSS_Error HTTPSession::execNetMsgCSGetDeviceStreamReqRESTful(const char* queryS
 			if (exeErr == QTSS_NoErr)
 			{
 				theErr = EASY_ERROR_SUCCESS_OK;
+				outIsReady = params.easyGetDeviceStreamParams.outIsReady;
 				break;
 			}
 		}
-
-
 	} while (false);
 
 
@@ -1199,6 +1185,7 @@ QTSS_Error HTTPSession::execNetMsgCSGetDeviceStreamReqRESTful(const char* queryS
 	{
 		body[EASY_TAG_URL] = outURL;
 		body[EASY_TAG_PROTOCOL] = HTTPProtocol::GetStreamTypeStream(streamType)->Ptr;
+		body[EASY_TAG_IS_READY] = outIsReady;
 	}
 
 	rsp.SetHead(header);
@@ -1234,7 +1221,7 @@ QTSS_Error HTTPSession::execNetMsgCSLiveDeviceStreamReqRESTful(const char * quer
 	const char* chProtocol = parList.DoFindCGIValueForParam(EASY_TAG_L_PROTOCOL);
 	//const char* chReserve = parList.DoFindCGIValueForParam(EASY_TAG_L_RESERVE);
 
-	UInt32 theChannelNum = 0;
+	UInt32 theChannelNum = 1;
 	EasyStreamType streamType = easyIllegalStreamType;
 
 	int theErr = EASY_ERROR_SERVER_NOT_IMPLEMENTED;
@@ -1273,6 +1260,7 @@ QTSS_Error HTTPSession::execNetMsgCSLiveDeviceStreamReqRESTful(const char * quer
 		params.easyGetDeviceStreamParams.inChannel = theChannelNum;
 		params.easyGetDeviceStreamParams.inStreamType = streamType;
 		params.easyGetDeviceStreamParams.outUrl = nullptr;
+		params.easyGetDeviceStreamParams.outIsReady = false;
 
 		UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kLiveDeviceStreamRole);
 		for (UInt32 fCurrentModule = 0; fCurrentModule < numModules; fCurrentModule++)
@@ -1304,156 +1292,3 @@ QTSS_Error HTTPSession::execNetMsgCSLiveDeviceStreamReqRESTful(const char * quer
 
 	return QTSS_NoErr;
 }
-
-//QTSS_Error HTTPSession::ExecNetMsgEasyHLSModuleReq(char* queryString, char* json)
-//{
-//	QTSS_Error theErr = QTSS_NoErr;
-//
-//	if (QTSServerInterface::GetServer()->GetPrefs()->CloudPlatformEnabled())
-//	{
-//		//printf("if cloud platform enabled,we will check platform login token");
-//		auto cokieTemp = fRequest->GetHeaderValue(httpCookieHeader);
-//		//if (!hasLogin(cokieTemp))
-//		//{
-//		//	return EASY_ERROR_CLIENT_UNAUTHORIZED;
-//		//}
-//	}
-//
-//	bool bStop = false;
-//
-//	char decQueryString[QTSS_MAX_URL_LENGTH] = { 0 };
-//	EasyUtil::Urldecode(reinterpret_cast<unsigned char*>(queryString), reinterpret_cast<unsigned char*>(decQueryString));
-//
-//	char* hlsURL = new char[QTSS_MAX_URL_LENGTH];
-//	hlsURL[0] = '\0';
-//	QTSSCharArrayDeleter theHLSURLDeleter(hlsURL);
-//	do
-//	{
-//
-//		if (strlen(decQueryString) == 0)
-//			break;
-//
-//		StrPtrLen theQueryString(decQueryString);
-//
-//		QueryParamList parList(decQueryString);
-//
-//		const char* sName = parList.DoFindCGIValueForParam(QUERY_STREAM_NAME);
-//		if (sName == nullptr)
-//		{
-//			theErr = QTSS_Unimplemented;
-//			break;
-//		}
-//
-//		const char* sURL = parList.DoFindCGIValueForParam(QUERY_STREAM_URL);
-//		const char* sCMD = parList.DoFindCGIValueForParam(QUERY_STREAM_CMD);
-//		const char* sTIMEOUT = parList.DoFindCGIValueForParam(QUERY_STREAM_TIMEOUT);
-//		int iTIMEOUT = 0;
-//
-//		if (sCMD)
-//		{
-//			if (::strcmp(sCMD, QUERY_STREAM_CMD_STOP) == 0)
-//				bStop = true;
-//		}
-//
-//		if (bStop)
-//		{
-//			Easy_StopHLSession(sName);
-//		}
-//		else
-//		{
-//			if (sURL == nullptr)
-//			{
-//				theErr = QTSS_Unimplemented;
-//				break;
-//			}
-//
-//			//TODO::这里需要对URL进行过滤
-//			//
-//
-//
-//			if (sTIMEOUT)
-//				iTIMEOUT = ::atoi(sTIMEOUT);
-//
-//			char msgStr[2048] = { 0 };
-//			qtss_snprintf(msgStr, sizeof(msgStr), "HTTPSession::ExecNetMsgEasyHLSModuleReq name=%s,url=%s,time=%d", sName, sURL, iTIMEOUT);
-//			QTSServerInterface::LogError(qtssMessageVerbosity, msgStr);
-//
-//			Easy_StartHLSession(sName, sURL, iTIMEOUT, hlsURL);
-//		}
-//	} while (0);
-//
-//	//构造MSG_SC_START_HLS_ACK响应报文
-//	EasyMsgSCStartHLSACK ack;
-//	ack.SetHeaderValue(EASY_TAG_VERSION, "1.0");
-//	if (strlen(hlsURL))
-//		ack.SetStreamURL(hlsURL);
-//
-//	string msg = ack.GetMsg();
-//	StrPtrLen msgJson(const_cast<char*>(msg.c_str()));
-//
-//	//构造响应报文(HTTP头)
-//	HTTPRequest httpAck(&QTSServerInterface::GetServerHeader(), httpResponseType);
-//	httpAck.CreateResponseHeader(msgJson.Len ? httpOK : httpNotImplemented);
-//	if (msgJson.Len)
-//		httpAck.AppendContentLengthHeader(msgJson.Len);
-//
-//	//响应完成后断开连接
-//	httpAck.AppendConnectionCloseHeader();
-//
-//	//Push MSG to OutputBuffer
-//	char respHeader[2048] = { 0 };
-//	StrPtrLen* ackPtr = httpAck.GetCompleteHTTPHeader();
-//	strncpy(respHeader, ackPtr->Ptr, ackPtr->Len);
-//
-//	RTSPResponseStream *pOutputStream = GetOutputStream();
-//	pOutputStream->Put(respHeader);
-//	if (msgJson.Len > 0)
-//		pOutputStream->Put(msgJson.Ptr, msgJson.Len);
-//
-//	return theErr;
-//}
-//
-//QTSS_Error HTTPSession::ExecNetMsgGetHlsSessionsReq(char* queryString, char* json)
-//{
-//	QTSS_Error theErr = QTSS_NoErr;
-//
-//	if (QTSServerInterface::GetServer()->GetPrefs()->CloudPlatformEnabled())
-//	{
-//		//printf("if cloud platform enabled,we will check platform login token");
-//		auto cokieTemp = fRequest->GetHeaderValue(httpCookieHeader);
-//		//if (!hasLogin(cokieTemp))
-//		//{
-//		//	return EASY_ERROR_CLIENT_UNAUTHORIZED;
-//		//}
-//	}
-//
-//	do
-//	{
-//		char* msgContent = static_cast<char*>(Easy_GetHLSessions());
-//
-//		StrPtrLen msgJson(msgContent);
-//
-//		//构造响应报文(HTTP头)
-//		HTTPRequest httpAck(&QTSServerInterface::GetServerHeader(), httpResponseType);
-//		httpAck.CreateResponseHeader(msgJson.Len ? httpOK : httpNotImplemented);
-//		if (msgJson.Len)
-//			httpAck.AppendContentLengthHeader(msgJson.Len);
-//
-//		//响应完成后断开连接
-//		httpAck.AppendConnectionCloseHeader();
-//
-//		//Push MSG to OutputBuffer
-//		char respHeader[2048] = { 0 };
-//		StrPtrLen* ackPtr = httpAck.GetCompleteHTTPHeader();
-//		strncpy(respHeader, ackPtr->Ptr, ackPtr->Len);
-//
-//		RTSPResponseStream *pOutputStream = GetOutputStream();
-//		pOutputStream->Put(respHeader);
-//		if (msgJson.Len > 0)
-//			pOutputStream->Put(msgJson.Ptr, msgJson.Len);
-//
-//		delete[] msgContent;
-//	} while (0);
-//
-//	return theErr;
-//}

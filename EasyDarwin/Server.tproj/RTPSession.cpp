@@ -28,9 +28,6 @@
 	 Contains:   Implementation of RTPSession class.
 
 	 Change History (most recent first):
-
-
-
  */
 
 #include "RTPSession.h"
@@ -38,7 +35,6 @@
 #include "QTSServerInterface.h"
 #include "QTSS.h"
 #include "OS.h"
-#include "OSMemory.h"
 
 #define RTPSESSION_DEBUGGING 0
 
@@ -227,7 +223,7 @@ QTSS_Error RTPSession::AddStream(RTSPRequestInterface* request, RTPStream** outS
 		}
 	}
 
-	*outStream = NEW RTPStream(theSSRC, this);
+	*outStream = new RTPStream(theSSRC, this);
 
 	QTSS_Error theErr = (*outStream)->Setup(request, inFlags);
 	if (theErr != QTSS_NoErr)
@@ -401,7 +397,7 @@ UInt32 RTPSession::PowerOf2Floor(UInt32 inNumToFloor)
 
 void RTPSession::Teardown()
 {
-	// To proffer a quick death of the RTSP session, let's disassociate
+	OSMutexLocker locker(this->GetRTSPSessionMutex());
 	// ourselves with it right now.
 
 	// Note that this function relies on the session mutex being grabbed, because

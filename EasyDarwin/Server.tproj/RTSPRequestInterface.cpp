@@ -26,10 +26,6 @@
 	 File:       RTSPRequestInterface.cp
 
 	 Contains:   Implementation of class defined in RTSPRequestInterface.h
-
-
-
-
  */
 
 
@@ -44,7 +40,6 @@
 #include "RTSPRequestStream.h"
 
 #include "StringParser.h"
-#include "OSMemory.h"
 #include "OSThread.h"
 #include "DateTranslator.h"
 #include "QTSSDataConverter.h"
@@ -150,6 +145,10 @@ void RTSPRequestInterface::ReInit(RTSPSessionInterface *session)
 
 	RTSPRequestStream* input = session->GetInputStream();
 	this->SetVal(qtssRTSPReqFullRequest, input->GetRequestBuffer()->Ptr, input->GetRequestBuffer()->Len);
+
+	// klaus(20170223):fix ffplay cant pull stream from easydarwin
+	fHeaderDictionary.SetVal(qtssSessionHeader, NULL, 0);
+	fHeaderDictionary.SetNumValues(qtssSessionHeader, 0);
 }
 
 //CONSTRUCTOR / DESTRUCTOR: very simple stuff
@@ -168,7 +167,7 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
 	fTtl(0),
 	fDestinationAddr(0),
 	fSourceAddr(0),
-	fTransportType(qtssRTPTransportTypeUDP),
+	fTransportType(qtssRTPTransportTypeTCP),
 	fNetworkMode(qtssRTPNetworkModeDefault),
 	fContentLength(0),
 	fIfModSinceDate(0),
@@ -787,7 +786,7 @@ void* RTSPRequestInterface::GetLocalPath(QTSSDictionary* inRequest, UInt32* outL
 	OS::RecursiveMakeDir(rootDir);
 
 	UInt32 fullPathLen = filePath.Len + theRootDir->Len;
-	char* theFullPath = NEW char[fullPathLen + 1];
+	char* theFullPath = new char[fullPathLen + 1];
 	theFullPath[fullPathLen] = '\0';
 
 	::memcpy(theFullPath, theRootDir->Ptr, theRootDir->Len);

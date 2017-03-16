@@ -15,8 +15,6 @@
 #include "QTSSModule.h"
 #include "OSQueue.h"
 
-#include "DecoderHelper.h"
-
 using namespace std;
 
 class HTTPSession : public HTTPSessionInterface
@@ -25,7 +23,7 @@ public:
 	HTTPSession();
 	virtual ~HTTPSession();
 
-	QTSS_Error SendHTTPPacket(StrPtrLen* contentXML, bool connectionClose, bool decrement);
+	QTSS_Error SendHTTPPacket(const string& msg, bool connectionClose, bool decrement);
 
 	string GetTalkbackSession() const { return talkbackSession; }
 	void SetTalkbackSession(const string& session) { talkbackSession = session; }
@@ -56,12 +54,17 @@ private:
 	QTSS_Error execNetMsgCSDeviceListReq(const char* json);
 	QTSS_Error execNetMsgCSCameraListReq(const char* json);
 
-	QTSS_Error execNetMsgCSGetStreamReqRESTful(const char* queryString);
-	QTSS_Error execNetMsgCSFreeStreamReqRESTful(const char* queryString);
+	QTSS_Error execNetMsgCSStartStreamReqRESTful(const char* queryString);
+	QTSS_Error execNetMsgCSStopStreamReqRESTful(const char* queryString);
 	QTSS_Error execNetMsgCSGetDeviceListReqRESTful(const char* queryString);
 	QTSS_Error execNetMsgCSGetCameraListReqRESTful(const char* queryString);
 	QTSS_Error execNetMsgCSPTZControlReqRESTful(const char* queryString);
 	QTSS_Error execNetMsgCSPresetControlReqRESTful(const char* queryString);
+
+	QTSS_Error execNetMsgCSGetBaseConfigReqRESTful(const char* queryString);
+	QTSS_Error execNetMsgCSSetBaseConfigReqRESTful(const char* queryString);
+
+	static QTSS_Error execNetMsgCSRestartReqRESTful(const char* queryString);
 
 	QTSS_Error execNetMsgCSGetUsagesReqRESTful(const char* queryString);
 
@@ -70,14 +73,13 @@ private:
 	// test current connections handled by this object against server pref connection limit
 	static bool overMaxConnections(UInt32 buffer);
 
-	QTSS_Error rawData2Image(char* rawBuf, int bufSize, int codec, int width, int height);
-	static int yuv2BMPImage(unsigned int width, unsigned int height, char* yuvpbuf, unsigned int* rgbsize, unsigned char* rgbdata);
+	void addDevice() const;
 
 	HTTPRequest* fRequest;
 	OSMutex fReadMutex;
 	OSMutex fSendMutex;
 
-	enum
+	enum class State
 	{
 		kReadingRequest = 0,
 		kFilteringRequest = 1,
@@ -90,25 +92,9 @@ private:
 		kHaveCompleteMessage = 7
 	};
 
-	struct DecodeParam
-	{
-		int codec;
-		int width;
-		int height;
-		int gopTally;
-		char* imageData;
-		unsigned int imageSize;
-
-	};
-
-	UInt32 fState;
+	State state_;
 
 	QTSS_ModuleState fModuleState;
-
-	// Channel Snap
-	DecodeParam decodeParam;
-
-	DecoderHelper decoderHelper;
 
 	string talkbackSession;
 

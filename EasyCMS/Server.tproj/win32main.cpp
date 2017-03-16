@@ -43,11 +43,11 @@
 
  // Data
 static FilePrefsSource sPrefsSource(true); // Allow dups
-static XMLPrefsParser* sXMLParser = NULL;
+static XMLPrefsParser* sXMLParser = nullptr;
 static FilePrefsSource sMessagesSource;
 static UInt16 sPort = 0; //port can be set on the command line
 static int sStatsUpdateInterval = 0;
-static SERVICE_STATUS_HANDLE sServiceStatusHandle = 0;
+static SERVICE_STATUS_HANDLE sServiceStatusHandle = nullptr;
 static QTSS_ServerState sInitialState = qtssRunningState;
 
 // Functions
@@ -241,6 +241,11 @@ void __stdcall ServiceMain(DWORD /*argc*/, LPTSTR* argv)
 	else
 		::ReportStatus(SERVICE_STOPPED, ERROR_BAD_COMMAND); // I dunno... report some error
 
+#ifdef WIN32
+	::ExitProcess(0);
+#else
+	::exit(0);
+#endif //WIN32
 }
 
 void WINAPI ServiceControl(DWORD inControlCode)

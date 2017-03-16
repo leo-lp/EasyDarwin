@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -21,7 +29,19 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
@@ -34,7 +54,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
   </ImportGroup>
@@ -47,9 +75,15 @@
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
     <IntDir>.\Release\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -59,7 +93,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../;../../Include/FFmpeg/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../redis/;../../HTTPUtilitiesLib/;../Server.tproj/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../APIModules/QTSSPosixFileSysModule/;../APIModules/EasyAuthModule/;../APIModules/EasyRedisModule/;../../EasyRedisClient/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../redis/;../../HTTPUtilitiesLib/;../Server.tproj/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../APIModules/QTSSPosixFileSysModule/;../APIModules/EasyAuthModule/;../APIModules/EasyRedisModule/;../../EasyRedisClient/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\Debug/EasyCMS.pch</PrecompiledHeaderOutputFile>
@@ -77,16 +111,60 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wsock32.lib;winmm.lib;avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\WinNTSupport\Debug\EasyCMS.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>../../Lib;../Lib;../../Lib/FFmpeg/x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../Lib;../Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\Debug/EasyCMS.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+      <Profile>true</Profile>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/StreamingServer.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TypeLibraryName>.\Debug/StreamingServer.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../redis/;../../HTTPUtilitiesLib/;../Server.tproj/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../APIModules/QTSSPosixFileSysModule/;../APIModules/EasyAuthModule/;../APIModules/EasyRedisModule/;../../EasyRedisClient/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\Debug/EasyCMS.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>../../Include/Win32header.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\WinNTSupport\x64\Debug\EasyCMS.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>../../Lib;../Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug/EasyCMS.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
       <Profile>true</Profile>
     </Link>
@@ -104,7 +182,7 @@
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>../;../../Include/FFmpeg/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../redis/;../../HTTPUtilitiesLib/;../Server.tproj/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../APIModules/QTSSPosixFileSysModule/;../APIModules/EasyAuthModule/;../APIModules/EasyRedisModule/;../../EasyRedisClient/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CONSOLE;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;__STDC_LIMIT_MACROS;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -136,18 +214,57 @@
       <OutputFile>.\Release/StreamingServer.bsc</OutputFile>
     </Bscmake>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TypeLibraryName>.\Release/StreamingServer.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MinSpace</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../;../../Include/FFmpeg/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../redis/;../../HTTPUtilitiesLib/;../Server.tproj/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../APIModules/QTSSPosixFileSysModule/;../APIModules/EasyAuthModule/;../APIModules/EasyRedisModule/;../../EasyRedisClient/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\Release/EasyCMS.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ForcedIncludeFiles>../../Include/Win32header.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;wsock32.lib;winmm.lib;avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\WinNTSupport\Release\EasyCMS.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>../../Lib;../Lib;../../Lib/FFmpeg/x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>.\Release/DarwinStreamingServer.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/StreamingServer.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\CommonUtilitiesLib\OSMapEx.cpp" />
     <ClCompile Include="..\..\CommonUtilitiesLib\OSRefTableEx.cpp" />
     <ClCompile Include="..\..\HTTPUtilitiesLib\HTTPProtocol.cpp" />
     <ClCompile Include="..\..\HTTPUtilitiesLib\HTTPRequest.cpp" />
-    <ClCompile Include="..\..\OSMemoryLib\OSMemory.cpp" />
-    <ClCompile Include="..\APIModules\EasyAuthModule\EasyAuthModule.cpp" />
     <ClCompile Include="..\APIModules\EasyRedisModule\EasyRedisModule.cpp" />
     <ClCompile Include="..\PrefsSourceLib\FilePrefsSource.cpp" />
     <ClCompile Include="..\PrefsSourceLib\XMLParser.cpp" />
     <ClCompile Include="..\PrefsSourceLib\XMLPrefsParser.cpp" />
-    <ClCompile Include="..\Server.tproj\DecoderHelper.cpp" />
     <ClCompile Include="..\Server.tproj\GenerateXMLPrefs.cpp" />
     <ClCompile Include="..\Server.tproj\HTTPRequestStream.cpp" />
     <ClCompile Include="..\Server.tproj\HTTPResponseStream.cpp" />
@@ -170,9 +287,8 @@
     <ClCompile Include="..\Server.tproj\win32main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\APIModules\EasyAuthModule\EasyAuthModule.h" />
     <ClInclude Include="..\APIModules\EasyRedisModule\EasyRedisModule.h" />
-    <ClInclude Include="..\APIModules\EasyRedisModule\Resources.h" />
+    <ClInclude Include="..\Server.tproj\SnapCleaner.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CommonUtilitiesLib\CommonUtilitiesLib.vcxproj">
@@ -185,7 +301,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\EasyProtocol\jsoncpp\lib_json.vcxproj">
       <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\..\EasyRedisClient\EasyRedisClient.vcxproj">
       <Project>{b1878765-6fb3-4e82-926a-4a68539f8a8c}</Project>

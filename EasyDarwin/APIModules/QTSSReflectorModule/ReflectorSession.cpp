@@ -29,28 +29,18 @@
 
 #include "ReflectorSession.h"
 #include "SocketUtils.h"
-
-#include "OSMemory.h"
 #include "OS.h"
-
 #include "QTSServerInterface.h"
-#include "sdpCache.h"
 
 #ifndef __Win32__
 #include <unistd.h>
-#endif
-
-#if DEBUG
-#define REFLECTOR_SESSION_DEBUGGING 0
-#else
-#define REFLECTOR_SESSION_DEBUGGING 0
 #endif
 
 FileDeleter::FileDeleter(StrPtrLen* inSDPPath)
 {
 	Assert(inSDPPath);
 	fFilePath.Len = inSDPPath->Len;
-	fFilePath.Ptr = NEW char[inSDPPath->Len + 1];
+	fFilePath.Ptr = new char[inSDPPath->Len + 1];
 	Assert(fFilePath.Ptr);
 	memcpy(fFilePath.Ptr, inSDPPath->Ptr, inSDPPath->Len);
 	fFilePath.Ptr[inSDPPath->Len] = 0;
@@ -74,8 +64,6 @@ ReflectorSession::ReflectorSession(StrPtrLen* inSourceID, UInt32 inChannelNum, S
 	fIsSetup(false),
 	fSessionName(inSourceID->GetAsCString()),
 	fChannelNum(inChannelNum),
-	fHLSLive(false),
-	fRtspRecord(false),
 	fQueueElem(),
 	fNumOutputs(0),
 	fStreamArray(nullptr),
@@ -87,6 +75,8 @@ ReflectorSession::ReflectorSession(StrPtrLen* inSourceID, UInt32 inChannelNum, S
 	fHasBufferedStreams(false),
 	fHasVideoKeyFrameUpdate(false)
 {
+	this->SetTaskName("ReflectorSession");
+
 	fQueueElem.SetEnclosingObject(this);
 	if (inSourceID != nullptr)
 	{
@@ -95,7 +85,7 @@ ReflectorSession::ReflectorSession(StrPtrLen* inSourceID, UInt32 inChannelNum, S
 			inSourceID->Len = QTSS_MAX_NAME_LENGTH;
 
 		sprintf(streamID, "%s%s%d", inSourceID->Ptr, EASY_KEY_SPLITER, fChannelNum);
-		fSourceID.Ptr = NEW char[::strlen(streamID) + 1];
+		fSourceID.Ptr = new char[::strlen(streamID) + 1];
 		::strncpy(fSourceID.Ptr, streamID, strlen(streamID));
 		fSourceID.Ptr[strlen(streamID)] = '\0';
 		fSourceID.Len = strlen(streamID);
@@ -110,8 +100,6 @@ ReflectorSession::ReflectorSession(StrPtrLen* inSourceID, UInt32 inChannelNum, S
 
 ReflectorSession::~ReflectorSession()
 {
-	this->StopHLSSession();
-
 	// For each stream, check to see if the ReflectorStream should be deleted
 	for (UInt32 x = 0; x < fSourceInfo->GetNumStreams(); x++)
 	{
@@ -124,28 +112,10 @@ ReflectorSession::~ReflectorSession()
 		fStreamArray[x] = nullptr;
 	}
 
-	//CSdpCache::GetInstance()->eraseSdpMap(GetSourceID()->GetAsCString());
-
 	// We own this object when it is given to us, so delete it now
 	delete[] fStreamArray;
 	delete fSourceInfo;
 	fLocalSDP.Delete();
-
-	if (fSourceID.Ptr)
-	{
-		QTSS_RoleParams theParams;
-		theParams.easyStreamInfoParams.inStreamName = fSessionName.Ptr;
-		theParams.easyStreamInfoParams.inChannel = fChannelNum;
-		theParams.easyStreamInfoParams.inAction = easyRedisActionDelete;
-		UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisUpdateStreamInfoRole);
-		for (UInt32 currentModule = 0; currentModule < numModules; currentModule++)
-		{
-			qtss_printf("从redis中删除推流名称%s\n", fSourceID.Ptr);
-			QTSSModule* theModule = QTSServerInterface::GetModule(QTSSModule::kRedisUpdateStreamInfoRole, currentModule);
-			(void)theModule->CallDispatch(Easy_RedisUpdateStreamInfo_Role, &theParams);
-		}
-	}
-
 	fSourceID.Delete();
 	fSessionName.Delete();
 }
@@ -169,87 +139,6 @@ QTSS_Error ReflectorSession::SetSessionName()
 	return QTSS_NoErr;
 }
 
-QTSS_Error ReflectorSession::StartHLSSession()
-{
-	QTSS_Error theErr = QTSS_NoErr;
-
-	if (!fHLSLive)
-	{
-		// Get the ip addr out of the prefs dictionary
-		UInt16 thePort = 554;
-		UInt32 theLen = sizeof(UInt16);
-		theErr = QTSServerInterface::GetServer()->GetPrefs()->GetValue(qtssPrefsRTSPPorts, 0, &thePort, &theLen);
-		Assert(theErr == QTSS_NoErr);
-
-		//构造本地URL
-		char url[QTSS_MAX_URL_LENGTH] = { 0 };
-		qtss_sprintf(url, "rtsp://127.0.0.1:%d/%s", thePort, fSourceID.Ptr);
-
-		Easy_StartHLSession(fSourceID.Ptr, url, 0, nullptr);
-		//if(QTSS_NoErr == theErr)
-		fHLSLive = true;
-	}
-	
-	return theErr;
-}
-
-QTSS_Error ReflectorSession::StopHLSSession()
-{
-	QTSS_Error theErr = QTSS_NoErr;
-
-	if (fHLSLive)
-	{
-		theErr = Easy_StopHLSession(fSourceID.Ptr);
-		if (QTSS_NoErr == theErr)
-			fHLSLive = false;
-	}
-
-	return theErr;
-}
-
-
-
-QTSS_Error ReflectorSession::StartRecordSession()
-{
-	QTSS_Error theErr = QTSS_NoErr;
-
-	if (!fRtspRecord)
-	{
-		// Get the ip addr out of the prefs dictionary
-		UInt16 thePort = 554;
-		UInt32 theLen = sizeof(UInt16);
-		theErr = QTSServerInterface::GetServer()->GetPrefs()->GetValue(qtssPrefsRTSPPorts, 0, &thePort, &theLen);
-		Assert(theErr == QTSS_NoErr);
-
-		//构造本地URL
-		char url[QTSS_MAX_URL_LENGTH] = { 0 };
-		qtss_sprintf(url, "rtsp://127.0.0.1:%d/%s", thePort, fSourceID.Ptr);
-		if (_recordWriter) {
-			_recordWriter = new RtspRecordSession();
-		}
-		_recordWriter->init();
-		_recordWriter->play(url, fSourceID.Ptr);
-		//if(QTSS_NoErr == theErr)
-		fRtspRecord = true;
-	}
-
-	return theErr;
-}
-
-QTSS_Error ReflectorSession::StopRecordSession()
-{
-	QTSS_Error theErr = QTSS_NoErr;
-
-	if (fRtspRecord)
-	{
-		_recordWriter->stop();
-		if (QTSS_NoErr == theErr)
-			fRtspRecord = false;
-	}
-
-	return theErr;
-}
-
 QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo* inInfo, QTSS_StandardRTSP_Params* inParams, UInt32 inFlags, bool filterState, UInt32 filterTimeout)
 {
 	// use the current SourceInfo
@@ -269,12 +158,12 @@ QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo* inInfo, QTSS_Stan
 		delete fStreamArray; // keep the array list synchronized with the source info.
 	}
 
-	fStreamArray = NEW ReflectorStream*[fSourceInfo->GetNumStreams()];
+	fStreamArray = new ReflectorStream*[fSourceInfo->GetNumStreams()];
 	::memset(fStreamArray, 0, fSourceInfo->GetNumStreams() * sizeof(ReflectorStream*));
 
 	for (UInt32 x = 0; x < fSourceInfo->GetNumStreams(); x++)
 	{
-		fStreamArray[x] = NEW ReflectorStream(fSourceInfo->GetStreamInfo(x));
+		fStreamArray[x] = new ReflectorStream(fSourceInfo->GetStreamInfo(x));
 		// Obviously, we may encounter an error binding the reflector sockets.
 		// If that happens, we'll just abort here, which will leave the ReflectorStream
 		// array in an inconsistent state, so we need to make sure in our cleanup
@@ -377,14 +266,15 @@ void    ReflectorSession::RemoveOutput(ReflectorOutput* inOutput, bool isClient)
 	if (fNumOutputs == 0)
 	{
 		this->SetNoneOutputStartTimeMS();
-		//QTSS_RoleParams theParams;
-		//theParams.easyFreeStreamParams.inStreamName = GetSourceID()->Ptr;
-		//auto numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyCMSFreeStreamRole);
-		//for (UInt32 currentModule = 0; currentModule < numModules; currentModule++)
-		//{
-		//	auto theModule = QTSServerInterface::GetModule(QTSSModule::kEasyCMSFreeStreamRole, currentModule);
-		//	(void)theModule->CallDispatch(Easy_CMSFreeStream_Role, &theParams);
-		//}
+		QTSS_RoleParams theParams;
+		theParams.easyStreamInfoParams.inStreamName = fSessionName.Ptr;
+		theParams.easyStreamInfoParams.inChannel = fChannelNum;
+		auto numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyCMSFreeStreamRole);
+		for (UInt32 currentModule = 0; currentModule < numModules; currentModule++)
+		{
+			auto theModule = QTSServerInterface::GetModule(QTSSModule::kEasyCMSFreeStreamRole, currentModule);
+			(void)theModule->CallDispatch(Easy_CMSFreeStream_Role, &theParams);
+		}
 	}
 }
 
@@ -410,7 +300,12 @@ UInt32  ReflectorSession::GetBitRate()
 	if (fStreamArray)
 	{
 		for (UInt32 x = 0; x < fSourceInfo->GetNumStreams(); x++)
-			retval += fStreamArray[x]->GetBitRate();
+		{
+			if (fStreamArray[x])
+			{
+				retval += fStreamArray[x]->GetBitRate();
+			}
+		}
 	}
 	return retval;
 }
@@ -430,19 +325,37 @@ void*   ReflectorSession::GetStreamCookie(UInt32 inStreamID)
 	return nullptr;
 }
 
+void ReflectorSession::DelRedisLive()
+{
+	QTSS_RoleParams theParams;
+	theParams.easyStreamInfoParams.inStreamName = fSessionName.Ptr;
+	theParams.easyStreamInfoParams.inChannel = fChannelNum;
+	theParams.easyStreamInfoParams.inAction = easyRedisActionDelete;
+	UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisUpdateStreamInfoRole);
+	for (UInt32 currentModule = 0; currentModule < numModules; currentModule++)
+	{
+		qtss_printf("从redis中删除推流名称%s\n", fSourceID.Ptr);
+		QTSSModule* theModule = QTSServerInterface::GetModule(QTSSModule::kRedisUpdateStreamInfoRole, currentModule);
+		(void)theModule->CallDispatch(Easy_RedisUpdateStreamInfo_Role, &theParams);
+	}
+}
+
 SInt64 ReflectorSession::Run()
 {
 	EventFlags events = this->GetEvents();
 
 	if (events & Task::kKillEvent)
+	{
 		return -1;
+	}
 
 	SInt64 sNowTime = OS::Milliseconds();
 	SInt64 sNoneTime = GetNoneOutputStartTimeMS();
-	if ((GetNumOutputs() == 0) && (sNowTime - sNoneTime >= /*QTSServerInterface::GetServer()->GetPrefs()->GetRTPSessionTimeoutInSecs()*/20 * 1000))
+	if ((GetNumOutputs() == 0) && (sNowTime - sNoneTime >= /*QTSServerInterface::GetServer()->GetPrefs()->GetRTPSessionTimeoutInSecs()*/35 * 1000))
 	{
 		QTSS_RoleParams theParams;
-		theParams.easyFreeStreamParams.inStreamName = fSessionName.Ptr;
+		theParams.easyStreamInfoParams.inStreamName = fSessionName.Ptr;
+		theParams.easyStreamInfoParams.inChannel = fChannelNum;
 		auto numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyCMSFreeStreamRole);
 		for (UInt32 currentModule = 0; currentModule < numModules; currentModule++)
 		{

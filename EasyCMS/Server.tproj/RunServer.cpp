@@ -38,7 +38,6 @@
 #include "RunServer.h"
 #include "SafeStdLib.h"
 #include "OS.h"
-#include "OSMemory.h"
 #include "OSThread.h"
 #include "Socket.h"
 #include "SocketUtils.h"
@@ -59,7 +58,7 @@
 #include <stdlib.h>
 #include <OSArrayObjectDeleter.h>
 
-QTSServer* sServer = NULL;
+QTSServer* sServer = nullptr;
 int sStatusUpdateInterval = 0;
 bool sHasPID = false;
 UInt64 sLastStatusPackets = 0;
@@ -106,7 +105,7 @@ QTSS_ServerState StartServer(XMLPrefsParser* inPrefsSource, PrefsSource* inMessa
 	QTSSDictionaryMap::Initialize();
 	//初始化Server对象属性字典，包括其他具有属性字典的类，都要先进行Initialize
 	QTSServerInterface::Initialize();//此部分必须在QTSServer对象构造前调用
-	sServer = NEW QTSServer();
+	sServer = new QTSServer();
 	sServer->SetDebugLevel(debugLevel);
 	sServer->SetDebugOptions(debugOptions);
 
@@ -213,7 +212,7 @@ QTSS_ServerState StartServer(XMLPrefsParser* inPrefsSource, PrefsSource* inMessa
 		qtss_snprintf(msgStr, sizeof(msgStr), "EasyCMS Service done starting up");
 		QTSServerInterface::LogError(qtssMessageVerbosity, msgStr);
 
-		OSMemory::SetMemoryError(ENOMEM);
+		//OSMemory::SetMemoryError(ENOMEM);
 	}
 
 	//// SWITCH TO RUN USER AND GROUP ID
@@ -344,14 +343,14 @@ void LogStatus(QTSS_ServerState theServerState)
 
 	// If the total number of HTTP sessions is 0  then we 
 	// might not need to update the "server_status" file.
-	char* thePrefStr = NULL;
+	char* thePrefStr = nullptr;
 	// We start lastHTTPSessionCount off with an impossible value so that
 	// we force the "server_status" file to be written at least once.
 	static int lastHTTPSessionCount = -1;
 	// Get the HTTP session count from the server.
 	(void)QTSS_GetValueAsString(sServer, qtssCurrentSessionCount, 0, &thePrefStr);
 	int currentHTTPSessionCount = ::atoi(thePrefStr);
-	delete[] thePrefStr; thePrefStr = NULL;
+	delete[] thePrefStr; thePrefStr = nullptr;
 	if (currentHTTPSessionCount == 0 && currentHTTPSessionCount == lastHTTPSessionCount)
 	{
 		// we don't need to update the "server_status" file except the
@@ -370,16 +369,16 @@ void LogStatus(QTSS_ServerState theServerState)
 
 	StrPtrLenDel pathStr(sServer->GetPrefs()->GetErrorLogDir());
 	StrPtrLenDel fileNameStr(sServer->GetPrefs()->GetStatsMonitorFileName());
-	ResizeableStringFormatter pathBuffer(NULL, 0);
+	ResizeableStringFormatter pathBuffer(nullptr, 0);
 	pathBuffer.PutFilePath(&pathStr, &fileNameStr);
 	pathBuffer.PutTerminator();
 
 	char*   filePath = pathBuffer.GetBufPtr();
 	FILE*   statusFile = ::fopen(filePath, "w");
-	char*   theAttributeValue = NULL;
+	char*   theAttributeValue = nullptr;
 	int     i;
 
-	if (statusFile != NULL)
+	if (statusFile != nullptr)
 	{
 		::chmod(filePath, 0640);
 		for (i = 0; i < numHeaderLines; i++)
@@ -394,12 +393,12 @@ void LogStatus(QTSS_ServerState theServerState)
 		for (i = 0; i < numAttributes; i++)
 		{
 			(void)QTSS_GetValueAsString(sServer, QTSSModuleUtils::GetAttrID(sServer, sAttributes[i]), 0, &theAttributeValue);
-			if (theAttributeValue != NULL)
+			if (theAttributeValue != nullptr)
 			{
 				qtss_fprintf(statusFile, sKey, sAttributes[i]);
 				qtss_fprintf(statusFile, sValue, theAttributeValue);
 				delete[] theAttributeValue;
-				theAttributeValue = NULL;
+				theAttributeValue = nullptr;
 			}
 		}
 
@@ -420,7 +419,7 @@ void print_status(FILE* file, FILE* console, char* format, char* theStr)
 
 void DebugLevel_1(FILE*   statusFile, FILE*   stdOut, bool printHeader)
 {
-	char*  thePrefStr = NULL;
+	char*  thePrefStr = nullptr;
 	static char numStr[12] = "";
 	static char dateStr[25] = "";
 	UInt32 theLen = 0;
@@ -430,11 +429,11 @@ void DebugLevel_1(FILE*   statusFile, FILE*   stdOut, bool printHeader)
 		printf("****************************************");
 	}
 
-	delete[] thePrefStr; thePrefStr = NULL;
+	delete[] thePrefStr; thePrefStr = nullptr;
 
 	(void)QTSS_GetValueAsString(sServer, qtssCurrentSessionCount, 0, &thePrefStr);
 	print_status(statusFile, stdOut, "%11s", thePrefStr);
-	delete[] thePrefStr; thePrefStr = NULL;
+	delete[] thePrefStr; thePrefStr = nullptr;
 
 	qtss_snprintf(numStr, sizeof(numStr) - 1, "%"  _U32BITARG_  "", (SInt32)sServer->GetNumThinned());
 	print_status(statusFile, stdOut, "%11s", numStr);
@@ -453,7 +452,7 @@ FILE* LogDebugEnabled()
 		static StrPtrLen statsFileNameStr("server_debug_status");
 
 		StrPtrLenDel pathStr(sServer->GetPrefs()->GetErrorLogDir());
-		ResizeableStringFormatter pathBuffer(NULL, 0);
+		ResizeableStringFormatter pathBuffer(nullptr, 0);
 		pathBuffer.PutFilePath(&pathStr, &statsFileNameStr);
 		pathBuffer.PutTerminator();
 
@@ -461,12 +460,12 @@ FILE* LogDebugEnabled()
 		return ::fopen(filePath, "a");
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 FILE* DisplayDebugEnabled()
 {
-	return (DebugDisplayOn(sServer)) ? stdout : NULL;
+	return (DebugDisplayOn(sServer)) ? stdout : nullptr;
 }
 
 void DebugStatus(UInt32 debugLevel, bool printHeader)
@@ -486,7 +485,7 @@ void FormattedTotalBytesBuffer(char *outBuffer, int outBufferLen, UInt64 totalBy
 {
 	Float32 displayBytes = 0.0;
 	char  sizeStr[] = "B";
-	char* format = NULL;
+	char* format = nullptr;
 
 	if (totalBytes > 1073741824) //GBytes
 	{
@@ -519,12 +518,12 @@ void FormattedTotalBytesBuffer(char *outBuffer, int outBufferLen, UInt64 totalBy
 
 void PrintStatus(bool printHeader)
 {
-	char* thePrefStr = NULL;
+	char* thePrefStr = nullptr;
 	UInt32 theLen = 0;
 
 	(void)QTSS_GetValueAsString(sServer, qtssCurrentSessionCount, 0, &thePrefStr);
 	qtss_printf("%11s", thePrefStr);
-	delete[] thePrefStr; thePrefStr = NULL;
+	delete[] thePrefStr; thePrefStr = nullptr;
 
 	//获取当前时间
 	char theDateBuffer[QTSSRollingLog::kMaxDateBufferSizeInBytes];
@@ -572,11 +571,13 @@ void RunServer()
 			for (UInt32 currentModule = 0; currentModule < numModules; currentModule++)
 			{
 				QTSSModule* theModule = QTSServerInterface::GetModule(QTSSModule::kRedisTTLRole, currentModule);
-				(void)theModule->CallDispatch(Easy_RedisTTL_Role, NULL);
+				(void)theModule->CallDispatch(Easy_RedisTTL_Role, nullptr);
 			}
 		}
 		//
 		LogStatus(theServerState);
+
+		theServerState = sServer->GetServerState();
 
 		if (sStatusUpdateInterval)
 		{
@@ -621,5 +622,11 @@ void RunServer()
 	//while running the server, make sure to let the parent process know by
 	//exiting with a nonzero status. Otherwise, exit with a 0 status
 	if (theServerState == qtssFatalErrorState || restartServer)
-		::exit(-2);//-2 signals parent process to restart server
+	{
+#ifdef WIN32
+		::ExitProcess(-2);
+#else
+		::exit(-2);
+#endif //WIN32
+	}
 }

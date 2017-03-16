@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="100">
+<configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>OSMemory.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -42,7 +41,6 @@
       <itemPath>OSHeap.cpp</itemPath>
       <itemPath>OSHeap.h</itemPath>
       <itemPath>OSMapEx.cpp</itemPath>
-      <itemPath>../OSMemoryLib/OSMemory.cpp</itemPath>
       <itemPath>OSMutex.cpp</itemPath>
       <itemPath>OSMutex.h</itemPath>
       <itemPath>OSMutexRW.cpp</itemPath>
@@ -171,8 +169,6 @@
           <output>${CND_CONF}/libCommonUtilitiesLib.a</output>
         </archiverTool>
       </compileType>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="ClientSocket.cpp" ex="false" tool="1" flavor2="0">
@@ -230,8 +226,6 @@
       <item path="OSHeap.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMapEx.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="OSMemory.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMutex.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -422,8 +416,6 @@
           <output>${CND_CONF}/libCommonUtilitiesLib.a</output>
         </archiverTool>
       </compileType>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="ClientSocket.cpp" ex="false" tool="1" flavor2="0">
@@ -481,8 +473,6 @@
       <item path="OSHeap.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMapEx.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="OSMemory.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMutex.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -674,8 +664,6 @@
           <output>${CND_CONF}/libCommonUtilitiesLib.a</output>
         </archiverTool>
       </compileType>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="9">
       </item>
       <item path="ClientSocket.cpp" ex="false" tool="1" flavor2="0">
@@ -733,8 +721,6 @@
       <item path="OSHeap.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMapEx.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="OSMemory.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMutex.cpp" ex="false" tool="1" flavor2="9">
       </item>
@@ -904,6 +890,7 @@
             <pElem>../EasyDarwin/RTPMetaInfoLib</pElem>
             <pElem>../EasyProtocol/Include</pElem>
             <pElem>../RTSPUtilitiesLib</pElem>
+            <pElem>../HTTPUtilitiesLib</pElem>
           </incDir>
           <incFile>
             <pElem>../Include/PlatformHeader.h</pElem>
@@ -925,8 +912,6 @@
           <output>${CND_CONF}/libCommonUtilitiesLib.a</output>
         </archiverTool>
       </compileType>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="9">
-      </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="9">
       </item>
       <item path="ClientSocket.cpp" ex="false" tool="1" flavor2="0">
@@ -984,8 +969,6 @@
       <item path="OSHeap.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMapEx.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="OSMemory.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMutex.cpp" ex="false" tool="1" flavor2="9">
       </item>
@@ -1177,8 +1160,6 @@
           <output>${CND_CONF}/libCommonUtilitiesLib.a</output>
         </archiverTool>
       </compileType>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="9">
       </item>
       <item path="ClientSocket.cpp" ex="false" tool="1" flavor2="0">
@@ -1236,8 +1217,6 @@
       <item path="OSHeap.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMapEx.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="OSMemory.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMutex.cpp" ex="false" tool="1" flavor2="9">
       </item>
@@ -1408,6 +1387,7 @@
             <pElem>../EasyDarwin/RTPMetaInfoLib</pElem>
             <pElem>../EasyProtocol/Include</pElem>
             <pElem>../RTSPUtilitiesLib</pElem>
+            <pElem>../HTTPUtilitiesLib</pElem>
           </incDir>
           <incFile>
             <pElem>../Include/PlatformHeader.h</pElem>
@@ -1429,8 +1409,6 @@
           <output>${CND_CONF}/libCommonUtilitiesLib.a</output>
         </archiverTool>
       </compileType>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="ClientSocket.cpp" ex="false" tool="1" flavor2="0">
@@ -1488,8 +1466,6 @@
       <item path="OSHeap.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMapEx.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="OSMemory.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="OSMutex.cpp" ex="false" tool="1" flavor2="0">
       </item>

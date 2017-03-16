@@ -26,9 +26,6 @@
 	 File:       RTPStream.cpp
 
 	 Contains:   Implementation of RTPStream class.
-
-
-
  */
 
 
@@ -36,6 +33,7 @@
 #include <stdlib.h>
 #ifndef __Win32__
 #include <arpa/inet.h>
+#include <fcntl.h>
 #endif
 #include "SafeStdLib.h"
 #include "RTPStream.h"
@@ -53,8 +51,6 @@
 #include "RTCPAPPNADUPacket.h"
 
 #include "SocketUtils.h"
-
-#include <fcntl.h>
 
 #if DEBUG
 #define RTP_TCP_STREAM_DEBUG 1
@@ -207,7 +203,7 @@ RTPStream::RTPStream(UInt32 inSSRC, RTPSessionInterface* inSession)
 	fAudioDryCount(0),
 	fClientSSRC(0),
 	fIsTCP(false),
-	fTransportType(qtssRTPTransportTypeUDP),
+	fTransportType(qtssRTPTransportTypeTCP),
 	fTurnThinningOffDelay_TCP(0),
 	fIncreaseThinningDelay_TCP(0),
 	fDropAllPacketsForThisStreamDelay_TCP(0),
@@ -779,6 +775,8 @@ QTSS_Error  RTPStream::InterleavedWrite(void* inBuffer, UInt32 inLen, UInt32* ou
 	{
 		return EAGAIN;
 	}
+
+	OSMutexLocker   locker(fSession->GetRTSPSessionMutex());
 
 	//char blahblah[2048];
 

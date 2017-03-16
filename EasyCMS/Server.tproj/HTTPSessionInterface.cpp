@@ -11,7 +11,6 @@
 
 #include "HTTPSessionInterface.h"
 #include "QTSServerInterface.h"
-#include "OSMemory.h"
 #include <errno.h>
 #include "EasyUtil.h"
 
@@ -70,6 +69,8 @@ HTTPSessionInterface::HTTPSessionInterface()
     fTimeoutTask.SetTask(this);
     fSocket.SetTask(this);
 
+	device_ = make_shared<strDevice>();
+
     fSessionIndex = ++sSessionIndexCounter;
     this->SetVal(EasyHTTPSesIndex, &fSessionIndex, sizeof(fSessionIndex));
 
@@ -77,8 +78,8 @@ HTTPSessionInterface::HTTPSessionInterface()
     this->SetVal(EasyHTTPSesType, &fSessionType, sizeof(fSessionType));
     //this->SetEmptyVal(EasyHTTPSesSerial, &fSerial[0], EASY_MAX_SERIAL_LENGTH);
 
-    qtss_sprintf(fSessionID, "%s", EasyUtil::GetUUID().c_str());
-    this->SetValue(EasyHTTPSessionID, 0, fSessionID, ::strlen(fSessionID), QTSSDictionary::kDontObeyReadOnly);
+	sessionId_ = EasyUtil::GetUUID();
+    this->SetValue(EasyHTTPSessionID, 0, sessionId_.c_str(), sessionId_.size(), QTSSDictionary::kDontObeyReadOnly);
 
     fInputStream.ShowMSG(QTSServerInterface::GetServer()->GetPrefs()->GetMSGDebugPrintfs());
     fOutputStream.ShowMSG(QTSServerInterface::GetServer()->GetPrefs()->GetMSGDebugPrintfs());
@@ -99,7 +100,7 @@ HTTPSessionInterface::~HTTPSessionInterface()
     {
     case EasyCameraSession:
         this->UnRegDevSession();
-        qtss_snprintf(msgStr, sizeof(msgStr), "EasyCameraSession offline from ip[%s], device_serial[%s]", remoteAddress, fDevice.serial_.c_str());
+        qtss_snprintf(msgStr, sizeof(msgStr), "EasyCameraSession offline from ip[%s], device_serial[%s]", remoteAddress, device_->serial_.c_str());
         break;
     case EasyNVRSession:
         this->UnRegDevSession();
@@ -190,7 +191,7 @@ void HTTPSessionInterface::snarfInputSocket(HTTPSessionInterface* fromHTTPSessio
     fInputStream.SnarfRetreat(fromHTTPSession->fInputStream);
 
     if (fInputSocketP == fOutputSocketP)
-        fInputSocketP = NEW TCPSocket(this, Socket::kNonBlockingSocketType);
+        fInputSocketP = new TCPSocket(this, Socket::kNonBlockingSocketType);
     else
         fInputSocketP->Cleanup();   // if this is a socket replacing an old socket, we need
                                     // to make sure the file descriptor gets closed
@@ -242,20 +243,22 @@ void HTTPSessionInterface::UnRegDevSession() const
     if (fAuthenticated)
     {
         char msgStr[512];
-        qtss_snprintf(msgStr, sizeof(msgStr), "Device unregister，Device_serial[%s]\n", fDevice.serial_.c_str());
+        qtss_snprintf(msgStr, sizeof(msgStr), "Device unregister，Device_serial[%s]\n", device_->serial_.c_str());
         QTSServerInterface::LogError(qtssMessageVerbosity, msgStr);
 
-        QTSServerInterface::GetServer()->GetDeviceSessionMap()->UnRegister(fDevice.serial_);//add
+        QTSServerInterface::GetServer()->GetDeviceSessionMap()->UnRegister(device_->serial_);//add
         //在redis上删除设备
         //QTSServerInterface::GetServer()->RedisDelDevice(fDevice.serial_.c_str());
 
         QTSS_RoleParams theParams;
-        theParams.DeviceInfoParams.inDevice = (void*)&fDevice;
+		theParams.DeviceInfoParams.serial_ = new char[64];
+		strncpy(theParams.DeviceInfoParams.serial_, device_->serial_.c_str(), device_->serial_.size() + 1);
         UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisDelDeviceRole);
         for (UInt32 currentModule = 0; currentModule < numModules; currentModule++)
         {
             QTSSModule* theModule = QTSServerInterface::GetModule(QTSSModule::kRedisDelDeviceRole, currentModule);
             (void)theModule->CallDispatch(Easy_RedisDelDevice_Role, &theParams);
         }
+		delete[] theParams.DeviceInfoParams.serial_;
     }
 }

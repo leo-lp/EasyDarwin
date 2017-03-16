@@ -1,3 +1,9 @@
+/*
+	Copyright (c) 2012-2016 EasyDarwin.ORG.  All rights reserved.
+	Github: https://github.com/EasyDarwin
+	WEChat: EasyDarwin
+	Website: http://www.easydarwin.org
+*/
 #include <stdio.h>
 
 #include "EasyRedisModule.h"
@@ -42,7 +48,7 @@ static QTSS_Error   EasyRedisModuleDispatch(QTSS_Role inRole, QTSS_RoleParamPtr 
 static QTSS_Error   Register(QTSS_Register_Params* inParams);
 static QTSS_Error   Initialize(QTSS_Initialize_Params* inParams);
 static QTSS_Error   RereadPrefs();
-static QTSS_Error	RedisConnect();
+static bool	RedisConnect();
 static QTSS_Error	RedisTTL();
 static QTSS_Error	RedisUpdateStream(Easy_StreamInfo_Params* inParams);
 static QTSS_Error	RedisSetRTSPLoad();
@@ -124,11 +130,11 @@ QTSS_Error RereadPrefs()
 	return QTSS_NoErr;
 }
 
-QTSS_Error RedisConnect()
+bool RedisConnect()
 {
 	if (sIfConSucess)
 	{
-		return QTSS_NoErr;
+		return true;
 	}
 
 	struct timeval timeout = { 1, 500000 }; //1.5 seconds
@@ -144,10 +150,8 @@ QTSS_Error RedisConnect()
 			printf("Connection error: can't allocate redis context\n");
 		}
 
-		return QTSS_NotConnected;
+		return false;
 	}
-
-	sIfConSucess = true;
 
 	char chKey[128] = { 0 };
 	sprintf(chKey, "auth %s", sRedisPassword);
@@ -168,17 +172,19 @@ QTSS_Error RedisConnect()
 			printf("Redis auth error\n");
 		});
 
-		return QTSS_NotConnected;
+		return false;
 	}
 
-	return QTSS_NoErr;
+	sIfConSucess = true;
+
+	return true;
 }
 
 QTSS_Error RedisTTL()
 {
 	OSMutexLocker mutexLock(&sMutex);
 
-	if (RedisConnect() != QTSS_NoErr)
+	if (!RedisConnect())
 	{
 		return QTSS_NotConnected;
 	}
@@ -213,8 +219,8 @@ QTSS_Error RedisTTL()
 		auto http = QTSServerInterface::GetServer()->GetPrefs()->GetServiceWanPort();
 		auto rtsp = QTSServerInterface::GetServer()->GetPrefs()->GetRTSPWANPort();
 
-		sprintf(chKey, "hmset %s:%s %s %s %s %d %s %d %s %d", server, guid, EASY_DARWIN_REDIS_IP, ip, EASY_DARWIN_REDIS_HTTP,
-			http, EASY_DARWIN_REDIS_RTSP, rtsp, EASY_DARWIN_REDIS_LOAD, load);
+		sprintf(chKey, "hmset %s:%s %s %s %s %d %s %d %s %d", server, guid, EASY_REDIS_IP, ip, EASY_REDIS_HTTP,
+			http, EASY_REDIS_RTSP, rtsp, EASY_REDIS_LOAD, load);
 		auto replyHmset = static_cast<redisReply*>(redisCommand(redisContext_, chKey));
 		auto replyHmsetGuard = MakeGuard([&]()
 		{
@@ -265,15 +271,17 @@ QTSS_Error RedisTTL()
 QTSS_Error RedisUpdateStream(Easy_StreamInfo_Params* inParams)
 {
 	OSMutexLocker mutexLock(&sMutex);
-	if (!sIfConSucess)
-		return QTSS_NotConnected;
 
-	char chKey[128] = { 0 };
-	sprintf(chKey, "%s:%s/%d", EASY_DARWIN_REDIS_LIVE, inParams->inStreamName, inParams->inChannel);
+	if (!RedisConnect())
+	{
+		return QTSS_NotConnected;
+	}
+
+	char chKey[512] = { 0 };
+	sprintf(chKey, "del %s:%s/%d", EASY_REDIS_LIVE, inParams->inStreamName, inParams->inChannel);
 
 	if (inParams->inAction == easyRedisActionDelete)
 	{
-		sprintf(chKey, "hdel %s", chKey);
 		auto reply = static_cast<redisReply*>(redisCommand(redisContext_, chKey));
 		auto replyGuard = MakeGuard([&]()
 		{
@@ -287,7 +295,7 @@ QTSS_Error RedisUpdateStream(Easy_StreamInfo_Params* inParams)
 		{
 			RedisErrorHandler([&]()
 			{
-				printf("Redis hdel Live error\n");
+				printf("Redis del Live error\n");
 			});
 
 			return QTSS_NotConnected;
@@ -295,9 +303,9 @@ QTSS_Error RedisUpdateStream(Easy_StreamInfo_Params* inParams)
 		return QTSS_NoErr;
 	}
 
-	sprintf(chKey, "hmset %s:%s/%d %s %d %s %d %s %s", EASY_DARWIN_REDIS_LIVE, inParams->inStreamName, inParams->inChannel,
-		EASY_DARWIN_REDIS_BITRATE, inParams->inBitrate, EASY_DARWIN_REDIS_OUTPUT, inParams->inNumOutputs,
-		EASY_DARWIN_REDIS_EASYDARWIN, QTSServerInterface::GetServer()->GetCloudServiceNodeID());
+	sprintf(chKey, "hmset %s:%s/%d %s %d %s %d %s %s", EASY_REDIS_LIVE, inParams->inStreamName, inParams->inChannel,
+		EASY_REDIS_BITRATE, inParams->inBitrate, EASY_REDIS_OUTPUT, inParams->inNumOutputs,
+		EASY_REDIS_EASYDARWIN, QTSServerInterface::GetServer()->GetCloudServiceNodeID());
 	auto reply = static_cast<redisReply*>(redisCommand(redisContext_, chKey));
 	auto replyGuard = MakeGuard([&]()
 	{
@@ -319,7 +327,7 @@ QTSS_Error RedisUpdateStream(Easy_StreamInfo_Params* inParams)
 
 	if (string(reply->str) == string("OK"))
 	{
-		sprintf(chKey, "expire %s:%s/%d 150", EASY_DARWIN_REDIS_LIVE, inParams->inStreamName, inParams->inChannel);
+		sprintf(chKey, "expire %s:%s/%d 150", EASY_REDIS_LIVE, inParams->inStreamName, inParams->inChannel);
 		auto replyExpire = static_cast<redisReply*>(redisCommand(redisContext_, chKey));
 		auto replyExpireGuard = MakeGuard([&]()
 		{
@@ -351,12 +359,12 @@ QTSS_Error RedisGetAssociatedCMS(QTSS_GetAssociatedCMS_Params* inParams)
 {
 	OSMutexLocker mutexLock(&sMutex);
 
-	if (!sIfConSucess)
+	if (!RedisConnect())
 	{
 		return QTSS_NotConnected;
 	}
 
-	string exists = Format("exists %s:%s", string(EASY_DARWIN_REDIS_DEVICE), string(inParams->inSerial));
+	string exists = Format("exists %s:%s", string(EASY_REDIS_DEVICE), string(inParams->inSerial));
 	auto reply = static_cast<redisReply*>(redisCommand(redisContext_, exists.c_str()));
 	auto replyGuard = MakeGuard([&]()
 	{
@@ -378,8 +386,8 @@ QTSS_Error RedisGetAssociatedCMS(QTSS_GetAssociatedCMS_Params* inParams)
 
 	if (reply->integer == 1)
 	{
-		string strTemp = Format("hmget %s:%s %s", string(EASY_DARWIN_REDIS_DEVICE), string(inParams->inSerial),
-			string(EASY_DARWIN_REDIS_EASYCMS));
+		string strTemp = Format("hmget %s:%s %s", string(EASY_REDIS_DEVICE), string(inParams->inSerial),
+			string(EASY_REDIS_EASYCMS));
 		auto replyHmget = static_cast<redisReply*>(redisCommand(redisContext_, strTemp.c_str()));
 		auto replyHmgetGuard = MakeGuard([&]()
 		{
@@ -399,10 +407,10 @@ QTSS_Error RedisGetAssociatedCMS(QTSS_GetAssociatedCMS_Params* inParams)
 			return QTSS_NotConnected;
 		}
 
-		string easycms = Format("%s:", string(EASY_DARWIN_REDIS_EASYCMS));
+		string easycms = Format("%s:", string(EASY_REDIS_EASYCMS));
 		easycms += replyHmget->element[0]->str;
 
-		strTemp = Format("hmget %s %s %s ", easycms, string(EASY_DARWIN_REDIS_IP), string(EASY_DARWIN_REDIS_PORT));
+		strTemp = Format("hmget %s %s %s ", easycms, string(EASY_REDIS_IP), string(EASY_REDIS_PORT));
 		auto replyHmgetEasyDarwin = static_cast<redisReply*>(redisCommand(redisContext_, strTemp.c_str()));
 		auto replyHmgetEasyDarwinGuard = MakeGuard([&]()
 		{
@@ -429,8 +437,24 @@ QTSS_Error RedisGetAssociatedCMS(QTSS_GetAssociatedCMS_Params* inParams)
 
 		if (replyHmgetEasyDarwin->type == EASY_REDIS_REPLY_ARRAY && replyHmgetEasyDarwin->elements == 2)
 		{
-			memcpy(inParams->outCMSIP, replyHmgetEasyDarwin->element[0]->str, replyHmgetEasyDarwin->element[0]->len);
-			memcpy(inParams->outCMSPort, replyHmgetEasyDarwin->element[1]->str, replyHmgetEasyDarwin->element[1]->len);
+			bool ok = true;
+			for (int i = 0; i < replyHmgetEasyDarwin->elements; ++i)
+			{
+				if (replyHmgetEasyDarwin->element[i]->type == EASY_REDIS_REPLY_NIL)
+				{
+					ok = ok && false;
+				}
+			}
+
+			if (ok)
+			{
+				memcpy(inParams->outCMSIP, replyHmgetEasyDarwin->element[0]->str, replyHmgetEasyDarwin->element[0]->len);
+				memcpy(inParams->outCMSPort, replyHmgetEasyDarwin->element[1]->str, replyHmgetEasyDarwin->element[1]->len);
+			}
+			else
+			{
+				return QTSS_RequestFailed;
+			}
 		}
 	}
 
@@ -440,8 +464,11 @@ QTSS_Error RedisGetAssociatedCMS(QTSS_GetAssociatedCMS_Params* inParams)
 QTSS_Error RedisSetRTSPLoad()
 {
 	OSMutexLocker mutexLock(&sMutex);
-	if (!sIfConSucess)
+
+	if (!RedisConnect())
+	{
 		return QTSS_NotConnected;
+	}
 
 	char chKey[128] = { 0 };
 	auto server = QTSServerInterface::GetServer()->GetServerName().Ptr;
@@ -470,7 +497,7 @@ QTSS_Error RedisSetRTSPLoad()
 
 	if (reply->integer == 1)
 	{
-		sprintf(chKey, "hset %s:%s %s %d", server, guid, EASY_DARWIN_REDIS_LOAD, load);
+		sprintf(chKey, "hset %s:%s %s %d", server, guid, EASY_REDIS_LOAD, load);
 		auto replyHset = static_cast<redisReply*>(redisCommand(redisContext_, chKey));
 		auto replyHsetGuard = MakeGuard([&]()
 		{
@@ -526,7 +553,7 @@ QTSS_Error RedisJudgeStreamID(QTSS_JudgeStreamID_Params* inParams)
 
 static void RedisErrorHandler(function<void()> func)
 {
-	printf("Connection error: %s\n", redisContext_->errstr);
+	//printf("Connection error: %s\n", redisContext_->errstr);
 
 	sIfConSucess = false;
 	redisFree(redisContext_);

@@ -26,15 +26,11 @@
 	 File:       main.cpp
 
 	 Contains:   main function to drive streaming server.
-
-
-
  */
 
 #include "RunServer.h"
 #include "SafeStdLib.h"
 #include "OS.h"
-#include "OSMemory.h"
 #include "OSThread.h"
 #include "Socket.h"
 #include "SocketUtils.h"
@@ -47,13 +43,13 @@
 
 #ifndef __Win32__
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 #include "QTSServerInterface.h"
 #include "QTSServer.h"
 
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <QTSSModuleUtils.h>
 
 QTSServer* sServer = NULL;
@@ -96,7 +92,7 @@ QTSS_ServerState StartServer(XMLPrefsParser* inPrefsSource, PrefsSource* inMessa
 	//start the server
 	QTSSDictionaryMap::Initialize();
 	QTSServerInterface::Initialize();// this must be called before constructing the server object
-	sServer = NEW QTSServer();
+	sServer = new QTSServer();
 	sServer->SetDebugLevel(debugLevel);
 	sServer->SetDebugOptions(debugOptions);
 
@@ -198,7 +194,7 @@ QTSS_ServerState StartServer(XMLPrefsParser* inPrefsSource, PrefsSource* inMessa
 
 		doneStartingUp = true;
 		qtss_printf("Streaming Server done starting up\n");
-		OSMemory::SetMemoryError(ENOMEM);
+		//OSMemory::SetMemoryError(ENOMEM);
 	}
 
 
@@ -706,5 +702,11 @@ void RunServer()
 	//while running the server, make sure to let the parent process know by
 	//exiting with a nonzero status. Otherwise, exit with a 0 status
 	if (theServerState == qtssFatalErrorState || restartServer)
-		::exit(-2);//-2 signals parent process to restart server
+	{
+#ifdef WIN32
+		::ExitProcess(-2);
+#else
+		::exit(-2);
+#endif //WIN32		
+	}
 }

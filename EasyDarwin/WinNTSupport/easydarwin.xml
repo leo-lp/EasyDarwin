@@ -27,7 +27,7 @@
 	<SERVER>
 		<PREF NAME="rtsp_timeout" TYPE="UInt32" >0</PREF>
 		<PREF NAME="rtsp_session_timeout" TYPE="UInt32" >90</PREF>
-		<PREF NAME="rtp_session_timeout" TYPE="UInt32" >90</PREF>
+		<PREF NAME="rtp_session_timeout" TYPE="UInt32" >120</PREF>
 		<PREF NAME="maximum_connections" TYPE="SInt32" >2000</PREF>
 		<PREF NAME="maximum_bandwidth" TYPE="SInt32" >1024000</PREF>
 		<PREF NAME="bind_ip_addr" >0</PREF>
@@ -68,7 +68,7 @@
 		<PREF NAME="alt_transport_src_ipaddr" ></PREF>
 		<PREF NAME="max_send_ahead_time" TYPE="UInt32" >25</PREF>
 		<PREF NAME="reliable_udp_slow_start" TYPE="bool" >true</PREF>
-		<PREF NAME="enable_cloud_platform" TYPE="bool" >true</PREF>
+		<PREF NAME="enable_cloud_platform" TYPE="bool" >false</PREF>
 		<PREF NAME="authentication_scheme" >digest</PREF>
 		<PREF NAME="sdp_file_delete_interval_seconds" TYPE="UInt32" >10</PREF>
 		<PREF NAME="auto_start" TYPE="bool" >false</PREF>
@@ -119,14 +119,14 @@
 		<PREF NAME="run_num_rtsp_threads" TYPE="UInt32" >4</PREF>
 		<PREF NAME="http_service_port" TYPE="UInt16" >10008</PREF>
 		<PREF NAME="rtsp_wan_port" TYPE="UInt16" >10554</PREF>
-		<PREF NAME="nginx_web_path" >http://192.168.1.53:€ºE</PREF>
-		<PREF NAME="nginx_rtmp_path" >rtmp://192.168.1.53:10035/live/</PREF>
-		<PREF NAME="nginx_root_folder" >./nginx/www/</PREF>
 		<PREF NAME="service_lan_port" TYPE="UInt16" >10008</PREF>
 		<PREF NAME="service_wan_port" TYPE="UInt16" >10008</PREF>
-		<PREF NAME="service_wan_ip" >0.0.0.0</PREF>
+		<PREF NAME="nginx_root_folder" >./nginx/www/</PREF>
 		<PREF NAME="module_folder" >c:\Program Files\EasyDarwin\QTSSModules\</PREF>
 		<PREF NAME="error_logfile_dir" >c:\Program Files\EasyDarwin\Logs\</PREF>
+		<PREF NAME="service_wan_ip" >0.0.0.0</PREF>
+		<PREF NAME="rtmp_wan_port" TYPE="UInt16" >10035</PREF>
+		<PREF NAME="nginx_web_path" >http://127.0.0.1:10080/</PREF>
 	</SERVER>
 	<MODULE NAME="QTSSAccessLogModule" >
 		<PREF NAME="request_logfile_interval" TYPE="UInt32" >7</PREF>
@@ -137,8 +137,6 @@
 		<PREF NAME="request_logfile_dir" >c:\Program Files\EasyDarwin\Logs\</PREF>
 	</MODULE>
 	<MODULE NAME="QTSSReflectorModule" >
-		<PREF NAME="hls_output_enabled" TYPE="bool" >false</PREF>
-		<PREF NAME="record_output_enabled" TYPE="bool" >true</PREF>
 		<PREF NAME="reflector_bucket_offset_delay_msec" TYPE="UInt32" >73</PREF>
 		<PREF NAME="reflector_buffer_size_sec" TYPE="UInt32" >1</PREF>
 		<PREF NAME="reflector_use_in_packet_receive_time" TYPE="bool" >false</PREF>
@@ -149,11 +147,11 @@
 		<PREF NAME="enable_broadcast_announce" TYPE="bool" >true</PREF>
 		<PREF NAME="enable_broadcast_push" TYPE="bool" >true</PREF>
 		<PREF NAME="max_broadcast_announce_duration_secs" TYPE="UInt32" >0</PREF>
-		<PREF NAME="allow_duplicate_broadcasts" TYPE="bool" >false</PREF>
+		<PREF NAME="allow_duplicate_broadcasts" TYPE="bool" >true</PREF>
 		<PREF NAME="enforce_static_sdp_port_range" TYPE="bool" >false</PREF>
 		<PREF NAME="minimum_static_sdp_port" TYPE="UInt16" >20000</PREF>
 		<PREF NAME="maximum_static_sdp_port" TYPE="UInt16" >65535</PREF>
-		<PREF NAME="kill_clients_when_broadcast_stops" TYPE="bool" >false</PREF>
+		<PREF NAME="kill_clients_when_broadcast_stops" TYPE="bool" >true</PREF>
 		<PREF NAME="use_one_SSRC_per_stream" TYPE="bool" >true</PREF>
 		<PREF NAME="timeout_stream_SSRC_secs" TYPE="UInt32" >30</PREF>
 		<PREF NAME="timeout_broadcaster_session_secs" TYPE="UInt32" >30</PREF>
@@ -193,16 +191,5 @@
 		<PREF NAME="redis_port" TYPE="UInt16" >6379</PREF>
 		<PREF NAME="redis_user" >admin</PREF>
 		<PREF NAME="redis_password" >admin</PREF>
-	</MODULE>
-	<MODULE NAME="RtspRecordModule" >
-		<PREF NAME="HTTP_ROOT_DIR" >http://cninct.com:10001/html/Movies/</PREF>
-		<PREF NAME="Record_DIR" >./Movies/</PREF>
-	</MODULE>
-	<MODULE NAME="EasyRTMPModule" ></MODULE>
-	<MODULE NAME="EasyHLSModule" >
-		<PREF NAME="M3U8_VERSION" TYPE="UInt32" >3</PREF>
-		<PREF NAME="ALLOW_CACHE" TYPE="bool" >false</PREF>
-		<PREF NAME="TARGET_DURATION" TYPE="UInt32" >4</PREF>
-		<PREF NAME="PLAYLIST_CAPACITY" TYPE="UInt32" >10</PREF>
 	</MODULE>
 </CONFIGURATION>

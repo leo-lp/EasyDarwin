@@ -14,12 +14,6 @@
       <itemPath>APICommonCode/QTSSRollingLog.h</itemPath>
     </logicalFolder>
     <logicalFolder name="APIModules" displayName="APIModules" projectFiles="true">
-      <logicalFolder name="EasyAuthModule"
-                     displayName="EasyAuthModule"
-                     projectFiles="true">
-        <itemPath>APIModules/EasyAuthModule/EasyAuthModule.cpp</itemPath>
-        <itemPath>APIModules/EasyAuthModule/EasyAuthModule.h</itemPath>
-      </logicalFolder>
       <logicalFolder name="EasyRedisModule"
                      displayName="EasyRedisModule"
                      projectFiles="true">
@@ -41,9 +35,6 @@
       <itemPath>../HTTPUtilitiesLib/HTTPRequest.cpp</itemPath>
       <itemPath>../HTTPUtilitiesLib/HTTPRequest.h</itemPath>
     </logicalFolder>
-    <logicalFolder name="OSMemoryLib" displayName="OSMemoryLib" projectFiles="true">
-      <itemPath>../OSMemoryLib/OSMemory.cpp</itemPath>
-    </logicalFolder>
     <logicalFolder name="PrefsSourceLib"
                    displayName="PrefsSourceLib"
                    projectFiles="true">
@@ -61,8 +52,6 @@
     <logicalFolder name="Server.tproj"
                    displayName="Server.tproj"
                    projectFiles="true">
-      <itemPath>Server.tproj/DecoderHelper.cpp</itemPath>
-      <itemPath>Server.tproj/DecoderHelper.h</itemPath>
       <itemPath>Server.tproj/GenerateXMLPrefs.cpp</itemPath>
       <itemPath>Server.tproj/GenerateXMLPrefs.h</itemPath>
       <itemPath>Server.tproj/HTTPRequestStream.cpp</itemPath>
@@ -189,8 +178,6 @@
       </item>
       <item path="../HTTPUtilitiesLib/HTTPRequest.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="APICommonCode/APICommonCode.vcproj" ex="false" tool="3" flavor2="0">
@@ -208,16 +195,6 @@
       <item path="APICommonCode/QTSSRollingLog.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="APICommonCode/QTSSRollingLog.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="APIModules/EasyAuthModule/EasyAuthModule.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="APIModules/EasyAuthModule/EasyAuthModule.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
       </item>
       <item path="APIModules/EasyRedisModule/EasyRedisModule.cpp"
             ex="false"
@@ -250,10 +227,6 @@
       <item path="PrefsSourceLib/XMLPrefsParser.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PrefsSourceLib/XMLPrefsParser.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Server.tproj/DecoderHelper.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Server.tproj/DecoderHelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Server.tproj/GenerateXMLPrefs.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -373,10 +346,8 @@
             <pElem>.</pElem>
             <pElem>../EasyProtocol/Include</pElem>
             <pElem>../EasyProtocol/jsoncpp/include</pElem>
-            <pElem>APIModules/EasyAuthModule</pElem>
             <pElem>APIModules/EasyRedisModule</pElem>
             <pElem>../EasyRedisClient</pElem>
-            <pElem>../Include/FFmpeg/linux</pElem>
           </incDir>
           <incFile>
             <pElem>../Include/PlatformHeader.h</pElem>
@@ -397,9 +368,8 @@
             <pElem>../EasyProtocol/jsoncpp/${CND_CONF}</pElem>
             <pElem>../Lib/i386</pElem>
             <pElem>../EasyRedisClient/${CND_CONF}</pElem>
-            <pElem>../Lib/FFmpeg/linux/i386</pElem>
           </linkerAddLib>
-          <commandLine>-lCommonUtilitiesLib -ldl -lpthread -lEasyProtocol -ljsoncpp -lboost_system -lboost_thread -lrt -leasyredisclient -lavformat -lavcodec -lavutil -lavfilter -lswscale -lavdevice -lswresample -lz -lbz2</commandLine>
+          <commandLine>-lCommonUtilitiesLib -ldl -lpthread -lEasyProtocol -ljsoncpp -lboost_system -lboost_thread -lrt -leasyredisclient -lz -lbz2</commandLine>
         </linkerTool>
       </compileType>
       <item path="../HTTPUtilitiesLib/HTTPProtocol.cpp"
@@ -415,8 +385,6 @@
             flavor2="0">
       </item>
       <item path="../HTTPUtilitiesLib/HTTPRequest.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -435,16 +403,6 @@
       <item path="APICommonCode/QTSSRollingLog.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="APICommonCode/QTSSRollingLog.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="APIModules/EasyAuthModule/EasyAuthModule.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="APIModules/EasyAuthModule/EasyAuthModule.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
       </item>
       <item path="APIModules/EasyRedisModule/EasyRedisModule.cpp"
             ex="false"
@@ -477,10 +435,6 @@
       <item path="PrefsSourceLib/XMLPrefsParser.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PrefsSourceLib/XMLPrefsParser.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Server.tproj/DecoderHelper.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Server.tproj/DecoderHelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Server.tproj/GenerateXMLPrefs.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -600,10 +554,8 @@
             <pElem>.</pElem>
             <pElem>../EasyProtocol/Include</pElem>
             <pElem>../EasyProtocol/jsoncpp/include</pElem>
-            <pElem>APIModules/EasyAuthModule</pElem>
             <pElem>APIModules/EasyRedisModule</pElem>
             <pElem>../EasyRedisClient</pElem>
-            <pElem>../Include/FFmpeg/linux</pElem>
           </incDir>
           <incFile>
             <pElem>../Include/PlatformHeader.h</pElem>
@@ -623,9 +575,8 @@
             <pElem>../EasyProtocol/jsoncpp/${CND_CONF}</pElem>
             <pElem>../Lib/x64</pElem>
             <pElem>../EasyRedisClient/${CND_CONF}</pElem>
-            <pElem>../Lib/FFmpeg/linux/x64</pElem>
           </linkerAddLib>
-          <commandLine>-lCommonUtilitiesLib -ldl -lpthread -lEasyProtocol -ljsoncpp -lboost_system -lboost_thread -lrt -leasyredisclient -lavformat -lavcodec -lavutil -lavfilter -lswscale -lavdevice -lswresample</commandLine>
+          <commandLine>-lCommonUtilitiesLib -ldl -lpthread -lEasyProtocol -ljsoncpp -lboost_system -lboost_thread -lrt -leasyredisclient</commandLine>
         </linkerTool>
       </compileType>
       <item path="../HTTPUtilitiesLib/HTTPProtocol.cpp"
@@ -641,8 +592,6 @@
             flavor2="0">
       </item>
       <item path="../HTTPUtilitiesLib/HTTPRequest.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../OSMemoryLib/OSMemory.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../SafeStdLib/InternalStdLib.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -661,16 +610,6 @@
       <item path="APICommonCode/QTSSRollingLog.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="APICommonCode/QTSSRollingLog.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="APIModules/EasyAuthModule/EasyAuthModule.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="APIModules/EasyAuthModule/EasyAuthModule.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
       </item>
       <item path="APIModules/EasyRedisModule/EasyRedisModule.cpp"
             ex="false"
@@ -703,10 +642,6 @@
       <item path="PrefsSourceLib/XMLPrefsParser.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PrefsSourceLib/XMLPrefsParser.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Server.tproj/DecoderHelper.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Server.tproj/DecoderHelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Server.tproj/GenerateXMLPrefs.cpp" ex="false" tool="1" flavor2="0">
       </item>

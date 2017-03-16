@@ -33,7 +33,6 @@
 
 #include "QTSServerPrefs.h"
 #include "MyAssert.h"
-#include "OSMemory.h"
 #include "QTSSDataConverter.h"
 #include "defaultPaths.h"
 #include "QTSSRollingLog.h"
@@ -54,19 +53,18 @@ char* QTSServerPrefs::sAdditionalDefaultPorts[] =
 
 char* QTSServerPrefs::sRTP_Header_Players[] =
 {
-	"vlc",
+	"EasyPlayer",
 	NULL
 };
 
 char* QTSServerPrefs::sAdjust_Bandwidth_Players[] =
 {
-	"vlc",
+	"EasyPlayer",
 	NULL
 };
 
 char* QTSServerPrefs::sNo_Pause_Time_Adjustment_Players[] =
 {
-	"vlc",
 	"EasyPlayer",
 	NULL
 };
@@ -185,9 +183,8 @@ QTSServerPrefs::PrefInfo QTSServerPrefs::sPrefInfo[] =
 
 	{ kDontAllowMultipleValues, "0.0.0.0",	NULL					 }, //service_wan_ip
 	{ kDontAllowMultipleValues, "10554",	NULL					 }, //rtsp_wan_port
-	{ kDontAllowMultipleValues, NONE_CONFIG_NGINX_WEB_PATH,		NULL }, //nginx_web_path
-	{ kDontAllowMultipleValues, NONE_CONFIG_NGINX_RTMP_PATH,	NULL }  //nginx_rtmp_path
-
+	{ kDontAllowMultipleValues, "10035",	NULL					 }, //rtmp_wan_port
+	{ kDontAllowMultipleValues, NONE_CONFIG_NGINX_WEB_PATH,		NULL }	//nginx_web_path
 };
 
 QTSSAttrInfoDict::AttrInfo  QTSServerPrefs::sAttributes[] =
@@ -280,10 +277,9 @@ QTSSAttrInfoDict::AttrInfo  QTSServerPrefs::sAttributes[] =
 
 	/* 84 */ { "service_wan_ip",						NULL,                   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModeWrite },
 	/* 85 */ { "rtsp_wan_port",							NULL,                   qtssAttrDataTypeUInt16,     qtssAttrModeRead | qtssAttrModeWrite },
+	/* 86 */ { "rtmp_wan_port",							NULL,                   qtssAttrDataTypeUInt16,     qtssAttrModeRead | qtssAttrModeWrite },
 
-	/* 86 */{ "nginx_web_path",							NULL,					qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModeWrite },
-	/* 87 */{ "nginx_rtmp_path",						NULL,					qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModeWrite }
-
+	/* 87 */{ "nginx_web_path",							NULL,					qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModeWrite }
 };
 
 
@@ -359,7 +355,8 @@ QTSServerPrefs::QTSServerPrefs(XMLPrefsParser* inPrefsSource, bool inWriteMissin
 	fAllowGuestAuthorizeDefault(true),
 	fServiceLANPort(10008),
 	fServiceWANPort(10008),
-	fRTSPWANPort(10554)
+	fRTSPWANPort(10554),
+	fRTMPWANPort(10035)
 {
 	SetupAttributes();
 	RereadServerPreferences(inWriteMissingPrefs);
@@ -453,6 +450,7 @@ void QTSServerPrefs::SetupAttributes()
 
 	this->SetVal(easyPrefsServiceWANIPAddr, &fRTSPWANAddr, sizeof(fRTSPWANAddr));
 	this->SetVal(easyPrefsRTSPWANPort, &fRTSPWANPort, sizeof(fRTSPWANPort));
+	this->SetVal(easyPrefsRTMPWANPort, &fRTMPWANPort, sizeof(fRTMPWANPort));
 }
 
 
@@ -612,7 +610,7 @@ void    QTSServerPrefs::UpdateAuthScheme()
 //	else
 //	{
 //		// Otherwise, allocate a buffer to store the path
-//		inBuffer = NEW char[theMovieFolder->Len + 2];
+//		inBuffer = new char[theMovieFolder->Len + 2];
 //		::memcpy(inBuffer, theMovieFolder->Ptr, theMovieFolder->Len);
 //	}
 //	inBuffer[theMovieFolder->Len] = 0;
@@ -681,7 +679,7 @@ char* QTSServerPrefs::GetStringPref(QTSS_AttributeID inAttrID)
 {
 	StrPtrLen theBuffer;
 	(void)this->GetValue(inAttrID, 0, NULL, &theBuffer.Len);
-	theBuffer.Ptr = NEW char[theBuffer.Len + 1];
+	theBuffer.Ptr = new char[theBuffer.Len + 1];
 	theBuffer.Ptr[0] = '\0';
 
 	if (theBuffer.Len > 0)

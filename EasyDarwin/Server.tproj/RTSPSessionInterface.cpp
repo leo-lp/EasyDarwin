@@ -28,12 +28,9 @@
 	 Contains:   Implementation of RTSPSessionInterface object.
  */
 
-
 #include "RTSPSessionInterface.h"
 #include "QTSServerInterface.h"
-#include "OSMemory.h"
 #include "RTSPProtocol.h"
-
 #include <errno.h>
 
 
@@ -42,8 +39,6 @@
 #else
 #define RTSP_SESSION_INTERFACE_DEBUGGING 0
 #endif
-
-
 
 std::atomic_uint RTSPSessionInterface::sSessionIDCounter{ kFirstRTSPSessionID };
 bool                  RTSPSessionInterface::sDoBase64Decoding = true;
@@ -103,7 +98,7 @@ RTSPSessionInterface::RTSPSessionInterface()
 	fInputSocketP(&fSocket),
 	fSessionType(qtssRTSPSession),
 	fLiveSession(true),
-        fObjectHolders(0),
+	fObjectHolders(0),
 	fCurChannelNum(0),
 	fChNumToSessIDMap(nullptr),
 	fRequestBodyLen(-1),
@@ -231,7 +226,7 @@ UInt8 RTSPSessionInterface::GetTwoChannelNumbers(StrPtrLen* inRTSPSessionID)
 	//
 	// Reallocate the Ch# to Session ID Map
 	UInt32 numChannelEntries = fCurChannelNum >> 1;
-	StrPtrLen* newMap = NEW StrPtrLen[numChannelEntries];
+	StrPtrLen* newMap = new StrPtrLen[numChannelEntries];
 	if (fChNumToSessIDMap != nullptr)
 	{
 		Assert(numChannelEntries > 1);
@@ -407,7 +402,7 @@ void    RTSPSessionInterface::SnarfInputSocket(RTSPSessionInterface* fromRTSPSes
 	fInputStream.SnarfRetreat(fromRTSPSession->fInputStream);
 
 	if (fInputSocketP == fOutputSocketP)
-		fInputSocketP = NEW TCPSocket(this, Socket::kNonBlockingSocketType);
+		fInputSocketP = new TCPSocket(this, Socket::kNonBlockingSocketType);
 	else
 		fInputSocketP->Cleanup();   // if this is a socket replacing an old socket, we need
 									// to make sure the file descriptor gets closed
@@ -450,7 +445,7 @@ void* RTSPSessionInterface::SetupParams(QTSSDictionary* inSession, UInt32* /*out
 void RTSPSessionInterface::SaveOutputStream()
 {
 	Assert(fOldOutputStreamBuffer.Ptr == nullptr);
-	fOldOutputStreamBuffer.Ptr = NEW char[fOutputStream.GetBytesWritten()];
+	fOldOutputStreamBuffer.Ptr = new char[fOutputStream.GetBytesWritten()];
 	fOldOutputStreamBuffer.Len = fOutputStream.GetBytesWritten();
 	::memcpy(fOldOutputStreamBuffer.Ptr, fOutputStream.GetBufPtr(), fOldOutputStreamBuffer.Len);
 }

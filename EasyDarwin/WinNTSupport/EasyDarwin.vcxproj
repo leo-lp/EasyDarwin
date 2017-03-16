@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -21,7 +29,19 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
@@ -34,7 +54,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
   </ImportGroup>
@@ -47,9 +75,15 @@
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
     <IntDir>.\Release\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -59,7 +93,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../;../Include/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../RTSPUtilitiesLib/;../../HTTPUtilitiesLib/;../Server.tproj/;../QTFileLib/;../RTSPClientLib/;../RTPMetaInfoLib/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../RTCPUtilitiesLib/;../../EasyRedisClient/;../APIModules/QTSSAccessModule/;../APIModules/QTSSAccessLogModule/;../APIModules/QTSSPosixFileSysModule/;../APIModules/QTSSReflectorModule/;../APIModules/QTSSFlowControlModule/;../APIModules/EasyCMSModule/;../APIModules/EasyRedisModule/;../APIModules/EasyRTMPModule/;../APIModules/EasyHLSModule/;../../EasyMP4Writer;../APIModules/RtspRecordModule/;../../Include/FFmpeg;../FileBrowserUtils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../Include/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../RTSPUtilitiesLib/;../../HTTPUtilitiesLib/;../Server.tproj/;../QTFileLib/;../RTSPClientLib/;../RTPMetaInfoLib/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../RTCPUtilitiesLib/;../../EasyRedisClient/;../APIModules/QTSSAccessModule/;../APIModules/QTSSAccessLogModule/;../APIModules/QTSSPosixFileSysModule/;../APIModules/QTSSReflectorModule/;../APIModules/QTSSFlowControlModule/;../APIModules/EasyCMSModule/;../APIModules/EasyRedisModule/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\Debug/EasyDarwin.pch</PrecompiledHeaderOutputFile>
@@ -77,16 +111,60 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wsock32.lib;winmm.lib;libEasyRTSPClient.lib;libEasyHLS.lib;libEasyAACEncoder.lib;libEasyRTMP.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;postproc.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\WinNTSupport\Debug\EasyDarwin.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\Lib\;..\..\Lib\FFmpeg\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\Lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\Debug/EasyDarwin.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
+      <Profile>true</Profile>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/StreamingServer.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TypeLibraryName>.\Debug/StreamingServer.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../;../Include/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../RTSPUtilitiesLib/;../../HTTPUtilitiesLib/;../Server.tproj/;../QTFileLib/;../RTSPClientLib/;../RTPMetaInfoLib/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../RTCPUtilitiesLib/;../../EasyRedisClient/;../APIModules/QTSSAccessModule/;../APIModules/QTSSAccessLogModule/;../APIModules/QTSSPosixFileSysModule/;../APIModules/QTSSReflectorModule/;../APIModules/QTSSFlowControlModule/;../APIModules/EasyCMSModule/;../APIModules/EasyRedisModule/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\Debug/EasyDarwin.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>../../Include/Win32header.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\WinNTSupport\x64\Debug\EasyDarwin.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>..\Lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug/EasyDarwin.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <Profile>true</Profile>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -103,7 +181,7 @@
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>../;../Include/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../HTTPUtilitiesLib/;../Server.tproj/;../QTFileLib/;../RTPMetaInfoLib/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../RTCPUtilitiesLib/;../RTSPClientLib/;../APIModules/QTSSFileModule/;../APIModules/QTSSHttpFileModule/;../APIModules/QTSSAccessModule/;../APIModules/QTSSAccessLogModule/;../APIModules/QTSSPosixFileSysModule/;../APIModules/QTSSAdminModule/;../APIModules/QTSSReflectorModule/;../APIModules/QTSSWebStatsModule/;../APIModules/QTSSWebDebugModule/;../APIModules/QTSSFlowControlModule/;../APIModules/QTSSMP3StreamingModule/;../APIModules/EasyHLSModule/;../APIModules/EasyRelayModule/;../APIModules/EasyCMSModule/;../APIModules/EasyRedisModule/;../../EasyRedisClient/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../Include/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../RTSPUtilitiesLib/;../../HTTPUtilitiesLib/;../Server.tproj/;../QTFileLib/;../RTSPClientLib/;../RTPMetaInfoLib/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../RTCPUtilitiesLib/;../../EasyRedisClient/;../APIModules/QTSSAccessModule/;../APIModules/QTSSAccessLogModule/;../APIModules/QTSSPosixFileSysModule/;../APIModules/QTSSReflectorModule/;../APIModules/QTSSFlowControlModule/;../APIModules/EasyCMSModule/;../APIModules/EasyRedisModule/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -135,39 +213,84 @@
       <OutputFile>.\Release/StreamingServer.bsc</OutputFile>
     </Bscmake>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TypeLibraryName>.\Release/StreamingServer.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MinSpace</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../;../Include/;../../Include/;../../EasyProtocol/jsoncpp/include/;../../EasyProtocol/Include/;../../CommonUtilitiesLib/;../../RTSPUtilitiesLib/;../../HTTPUtilitiesLib/;../Server.tproj/;../QTFileLib/;../RTSPClientLib/;../RTPMetaInfoLib/;../PrefsSourceLib/;../APIStubLib/;../APICommonCode/;../RTCPUtilitiesLib/;../../EasyRedisClient/;../APIModules/QTSSAccessModule/;../APIModules/QTSSAccessLogModule/;../APIModules/QTSSPosixFileSysModule/;../APIModules/QTSSReflectorModule/;../APIModules/QTSSFlowControlModule/;../APIModules/EasyCMSModule/;../APIModules/EasyRedisModule/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;DSS_USE_API_CALLBACKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\Release/EasyDarwin.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ForcedIncludeFiles>../../Include/Win32header.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\WinNTSupport\Release\EasyDarwin.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>..\Lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>.\Release/DarwinStreamingServer.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/StreamingServer.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\HTTPUtilitiesLib\HTTPClientRequestStream.cpp" />
     <ClCompile Include="..\..\HTTPUtilitiesLib\HTTPClientResponseStream.cpp" />
     <ClCompile Include="..\..\HTTPUtilitiesLib\HTTPProtocol.cpp" />
     <ClCompile Include="..\..\HTTPUtilitiesLib\HTTPRequest.cpp" />
-    <ClCompile Include="..\..\OSMemoryLib\OSMemory.cpp" />
     <ClCompile Include="..\..\RTSPUtilitiesLib\RTSPProtocol.cpp" />
     <ClCompile Include="..\..\SafeStdLib\InternalStdLib.cpp" />
     <ClCompile Include="..\APIModules\EasyCMSModule\EasyCMSModule.cpp" />
     <ClCompile Include="..\APIModules\EasyCMSModule\EasyCMSSession.cpp" />
-    <ClCompile Include="..\APIModules\EasyHLSModule\EasyHLSModule.cpp" />
-    <ClCompile Include="..\APIModules\EasyHLSModule\EasyHLSSession.cpp" />
     <ClCompile Include="..\APIModules\EasyRedisModule\EasyRedisModule.cpp" />
-    <ClCompile Include="..\APIModules\EasyRTMPModule\EasyRTMPModule.cpp" />
-    <ClCompile Include="..\APIModules\EasyRTMPModule\EasyRTMPSession.cpp" />
     <ClCompile Include="..\APIModules\QTSSAccessLogModule\QTSSAccessLogModule.cpp">
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="..\APIModules\QTSSAccessModule\AccessChecker.cpp">
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="..\APIModules\QTSSAccessModule\QTSSAccessModule.cpp">
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </DebugInformationFormat>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </DebugInformationFormat>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </DebugInformationFormat>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </DebugInformationFormat>
     </ClCompile>
     <ClCompile Include="..\APIModules\QTSSFlowControlModule\QTSSFlowControlModule.cpp">
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="..\APIModules\QTSSPOSIXFileSysModule\QTSSPosixFileSysModule.cpp">
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="..\APIModules\QTSSReflectorModule\QTSSReflectorModule.cpp" />
     <ClCompile Include="..\APIModules\QTSSReflectorModule\RCFSourceInfo.cpp" />
@@ -175,9 +298,6 @@
     <ClCompile Include="..\APIModules\QTSSReflectorModule\ReflectorStream.cpp" />
     <ClCompile Include="..\APIModules\QTSSReflectorModule\RTPSessionOutput.cpp" />
     <ClCompile Include="..\APIModules\QTSSReflectorModule\SequenceNumberMap.cpp" />
-    <ClCompile Include="..\APIModules\RtspRecordModule\EasyMP4Writer.cpp" />
-    <ClCompile Include="..\APIModules\RtspRecordModule\RtspRecordModule.cpp" />
-    <ClCompile Include="..\APIModules\RtspRecordModule\RtspRecordSession.cpp" />
     <ClCompile Include="..\FileBrowserUtils\SearchFileDir.cpp" />
     <ClCompile Include="..\PrefsSourceLib\FilePrefsSource.cpp" />
     <ClCompile Include="..\PrefsSourceLib\XMLParser.cpp" />
@@ -227,16 +347,7 @@
     <ClInclude Include="..\..\RTSPUtilitiesLib\RTSPProtocol.h" />
     <ClInclude Include="..\APIModules\EasyCMSModule\EasyCMSModule.h" />
     <ClInclude Include="..\APIModules\EasyCMSModule\EasyCMSSession.h" />
-    <ClInclude Include="..\APIModules\EasyHLSModule\EasyHLSModule.h" />
-    <ClInclude Include="..\APIModules\EasyHLSModule\EasyHLSSession.h" />
     <ClInclude Include="..\APIModules\EasyRedisModule\EasyRedisModule.h" />
-    <ClInclude Include="..\APIModules\EasyRedisModule\Resources.h" />
-    <ClInclude Include="..\APIModules\EasyRTMPModule\EasyRTMPModule.h" />
-    <ClInclude Include="..\APIModules\EasyRTMPModule\EasyRTMPSession.h" />
-    <ClInclude Include="..\APIModules\RtspRecordModule\EasyMP4Writer.h" />
-    <ClInclude Include="..\APIModules\RtspRecordModule\RtspRecordModule.h" />
-    <ClInclude Include="..\APIModules\RtspRecordModule\RtspRecordSession.h" />
-    <ClInclude Include="..\FileBrowserUtils\SearchFileDir.h" />
     <ClInclude Include="..\Server.tproj\HTTPSession.h" />
     <ClInclude Include="..\Server.tproj\HTTPSessionInterface.h" />
   </ItemGroup>

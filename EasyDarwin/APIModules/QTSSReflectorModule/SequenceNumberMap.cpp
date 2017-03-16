@@ -26,15 +26,10 @@
 	 File:       SequenceNumberMap.cpp
 
 	 Contains:   Implements object defined in SequenceNumberMap.h.
-
-
-
-
  */
 
 #include <string.h>
 #include "MyAssert.h"
-#include "OSMemory.h"
 
 #include "SequenceNumberMap.h"
 
@@ -57,7 +52,7 @@ bool SequenceNumberMap::AddSequenceNumber(UInt16 inSeqNumber)
 	//Check to see if object has been initialized
 	if (fSlidingWindow == NULL)
 	{
-		fSlidingWindow = NEW bool[fWindowSize + 1];
+		fSlidingWindow = new bool[fWindowSize + 1];
 		::memset(fSlidingWindow, 0, fWindowSize * sizeof(bool));
 		fHighestSeqIndex = 0;
 		fHighestSeqNumber = inSeqNumber;

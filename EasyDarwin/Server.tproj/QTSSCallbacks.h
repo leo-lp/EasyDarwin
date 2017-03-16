@@ -157,15 +157,7 @@ public:
 	static void   QTSS_LockStdLib();
 	static void   QTSS_UnlockStdLib();
 
-	// Start HLS Session
-	static QTSS_Error	Easy_StartHLSession(const char* inSessionName, const char* inURL, UInt32 inTimeout, char* outURL);
-	// Stop HLS Session
-	static QTSS_Error	Easy_StopHLSession(const char* inSessionName);
-
-	static void* Easy_GetHLSessions();
-
 	static void* Easy_GetRTSPPushSessions();
-	static void *Easy_GetRTSPRecordSessions(char* inSessionName, UInt64 startTime, UInt64 endTime);
 };
 
 #endif //__QTSSCALLBACKS_H__

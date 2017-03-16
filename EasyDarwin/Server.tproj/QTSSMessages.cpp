@@ -26,13 +26,9 @@
 	 File:       QTSSMessages.cpp
 
 	 Contains:   Implementation of object defined in .h
-
-
-
  */
 
 #include "QTSSMessages.h"
-#include "OSMemory.h"
 
  // see QTSS.h (QTSS_TextMessagesObject) for list of enums to map these strings
 
@@ -220,7 +216,7 @@ QTSSMessages::QTSSMessages(PrefsSource* inMessages)
 
 	// Use the names of the attributes in the attribute map as the key values for
 	// finding preferences in the config file.
-	attrBuffer = NEW char*[numAttrs];
+	attrBuffer = new char*[numAttrs];
 	::memset(attrBuffer, 0, sizeof(char*) * numAttrs);
 	for (UInt32 x = 0; x < numAttrs; x++)
 	{
@@ -250,7 +246,7 @@ QTSSMessages::QTSSMessages(PrefsSource* inMessages)
 		// the new attribute, and copy the data into the newly allocated buffer
 		if (theMessage[0] != '\0')
 		{
-			attrBuffer[x] = NEW char[::strlen(theMessage) + 2];
+			attrBuffer[x] = new char[::strlen(theMessage) + 2];
 			::strcpy(attrBuffer[x], theMessage);
 			this->SetVal(this->GetDictionaryMap()->GetAttrID(x),
 				attrBuffer[x], ::strlen(attrBuffer[x]));

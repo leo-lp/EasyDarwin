@@ -39,7 +39,6 @@
 #include "ReflectorStream.h"
 #include "SourceInfo.h"
 #include "Task.h"//add
-#include "RtspRecordSession.h"
 #include <atomic>
 
 #ifndef _FILE_DELETER_
@@ -99,11 +98,7 @@ public:
 		UInt32 inFlags = kMarkSetup, bool filterState = true, UInt32 filterTimeout = 30);
 
 	QTSS_Error		SetSessionName();
-	QTSS_Error		StartHLSSession();
-	QTSS_Error		StopHLSSession();
 
-	QTSS_Error		StartRecordSession();
-	QTSS_Error		StopRecordSession();
 	// Packets get forwarded by attaching ReflectorOutput objects to a ReflectorSession.
 
 	void    AddOutput(ReflectorOutput* inOutput, bool isClient);
@@ -167,6 +162,8 @@ public:
 	void	SetHasBufferedStreams(bool enableBuffer) { fHasBufferedStreams = enableBuffer; }
 	void	SetHasVideoKeyFrameUpdate(bool indexUpdate) { fHasVideoKeyFrameUpdate = indexUpdate; }
 
+	void	DelRedisLive();
+
 private:
 
 	// Is this session setup?
@@ -179,13 +176,8 @@ private:
 	StrPtrLen	fSessionName;
 	UInt32		fChannelNum;
 
-	// HLS Session
-	bool		fHLSLive;
-	bool		fRtspRecord;
-
 	OSQueueElem fQueueElem; // Relay uses this.
 
-	//unsigned int	fNumOutputs;
 	std::atomic_uint fNumOutputs;
 
 	ReflectorStream**   fStreamArray;
@@ -204,7 +196,6 @@ private:
 	bool		fHasBufferedStreams;
 	bool		fHasVideoKeyFrameUpdate;
 
-	RtspRecordSession	*_recordWriter;
 private:
 	virtual SInt64 Run();
 };

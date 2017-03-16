@@ -31,11 +31,9 @@
 #include "QTSSCallbacks.h"
 #include "QTSSDictionary.h"
 #include "QTSSStream.h"
-#include "OSMemory.h"
 #include "RTSPRequestInterface.h"
 #include "RTPSession.h"
 #include "OS.h"
-#include "EventContext.h"
 #include "QTSSFile.h"
 #include "QTSSSocket.h"
 #include "QTSServerInterface.h"
@@ -48,8 +46,6 @@
 #include "EasyProtocol.h"
 
 #include "ReflectorSession.h"
-#include "SearchFileDir.h"
-#include "RtspRecordSession.h"
 
 using namespace EasyDarwin::Protocol;
 using namespace std;
@@ -66,12 +62,16 @@ void*   QTSSCallbacks::QTSS_New(FourCharCode /*inMemoryIdentifier*/, UInt32 inSi
 	// version of New is used.
 
 	//return OSMemory::New(inSize, inMemoryIdentifier, false);
-	return OSMemory::New(inSize);
+	//return OSMemory::New(inSize);
+
+	auto temp = new int[inSize];
+	return temp;
 }
 
 void    QTSSCallbacks::QTSS_Delete(void* inMemory)
 {
-	OSMemory::Delete(inMemory);
+	//OSMemory::Delete(inMemory);
+	delete[] inMemory;
 }
 
 void    QTSSCallbacks::QTSS_Milliseconds(SInt64* outMilliseconds)
@@ -437,7 +437,7 @@ QTSS_Error  QTSSCallbacks::QTSS_OpenFileObject(char* inPath, QTSS_OpenFileFlags 
 
 	//
 	// Create a new file object
-	QTSSFile* theNewFile = NEW QTSSFile();
+	QTSSFile* theNewFile = new QTSSFile();
 	QTSS_Error theErr = theNewFile->Open(inPath, inFlags);
 
 	if (theErr != QTSS_NoErr)
@@ -471,7 +471,7 @@ QTSS_Error  QTSSCallbacks::QTSS_CreateStreamFromSocket(int inFileDesc, QTSS_Stre
 
 	//
 	// Create a new socket object
-	*outStream = (QTSS_StreamRef)NEW QTSSSocket(inFileDesc);
+	*outStream = (QTSS_StreamRef)new QTSSSocket(inFileDesc);
 	return QTSS_NoErr;
 }
 
@@ -961,48 +961,6 @@ void QTSSCallbacks::QTSS_UnlockStdLib()
 	OS::GetStdLibMutex()->Unlock();
 }
 
-QTSS_Error QTSSCallbacks::Easy_StartHLSession(const char* inSessionName, const char* inURL, UInt32 inTimeout, char* outURL)
-{
-	QTSS_RoleParams params;
-	params.easyHLSOpenParams.inStreamName = (char*)inSessionName;
-	params.easyHLSOpenParams.inRTSPUrl = (char*)inURL;
-	params.easyHLSOpenParams.inTimeout = inTimeout;
-	params.easyHLSOpenParams.outHLSUrl = outURL;
-
-	UInt32 fCurrentModule = 0;
-	UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyHLSOpenRole);
-	for (; fCurrentModule < numModules; fCurrentModule++)
-	{
-		QTSSModule* theModule = QTSServerInterface::GetModule(QTSSModule::kEasyHLSOpenRole, fCurrentModule);
-		(void)theModule->CallDispatch(Easy_HLSOpen_Role, &params);
-		return QTSS_NoErr;
-	}
-
-	return QTSS_RequestFailed;
-}
-
-QTSS_Error QTSSCallbacks::Easy_StopHLSession(const char* inSessionName)
-{
-	QTSS_RoleParams packetParams;
-	packetParams.easyHLSCloseParams.inStreamName = (char*)inSessionName;
-
-	UInt32 fCurrentModule = 0;
-	UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyHLSCloseRole);
-	for (; fCurrentModule < numModules; fCurrentModule++)
-	{
-		QTSSModule* theModule = QTSServerInterface::GetModule(QTSSModule::kEasyHLSCloseRole, fCurrentModule);
-		(void)theModule->CallDispatch(Easy_HLSClose_Role, &packetParams);
-		return QTSS_NoErr;
-	}
-
-	return QTSS_RequestFailed;
-}
-
-void* QTSSCallbacks::Easy_GetHLSessions()
-{
-	return NULL;
-}
-
 void* QTSSCallbacks::Easy_GetRTSPPushSessions()
 {
 	OSRefTable* reflectorSessionMap = QTSServerInterface::GetServer()->GetReflectorSessionMap();
@@ -1050,61 +1008,62 @@ void* QTSSCallbacks::Easy_GetRTSPPushSessions()
 }
 
 
-void *QTSSCallbacks::Easy_GetRTSPRecordSessions(char* inSessionName, UInt64 startTime, UInt64 endTime) {
+//void *QTSSCallbacks::Easy_GetRTSPRecordSessions(char* inSessionName, UInt64 startTime, UInt64 endTime) 
+//{
+//	return nullptr;
+	//char * rootdir = RTSPRecordSession::getNetRecordRootPath();
 
-	char * rootdir = RtspRecordSession::getNetRecordRootPath();
+	//EasyMsgSCRecordList ack;
+	//ack.SetHeaderValue(EASY_TAG_VERSION, "1.0");
+	//ack.SetHeaderValue(EASY_TAG_CSEQ, "1");
 
-	EasyMsgSCRecordList ack;
-	ack.SetHeaderValue(EASY_TAG_VERSION, "1.0");
-	ack.SetHeaderValue(EASY_TAG_CSEQ, "1");
+	//char folder[QTSS_MAX_NAME_LENGTH] = { 0 };
+	////char movieFolder[QTSS_MAX_NAME_LENGTH] = { 0 };
+	////UInt32 pathLen = QTSS_MAX_NAME_LENGTH;
+	////QTSServerInterface::GetServer()->GetPrefs()->GetMovieFolder(&movieFolder[0], &pathLen);
 
-	char folder[QTSS_MAX_NAME_LENGTH] = { 0 };
-	//char movieFolder[QTSS_MAX_NAME_LENGTH] = { 0 };
-	//UInt32 pathLen = QTSS_MAX_NAME_LENGTH;
-	//QTSServerInterface::GetServer()->GetPrefs()->GetMovieFolder(&movieFolder[0], &pathLen);
+	//char *movieFolder = RTSPRecordSession::getRecordRootPath();
 
-	char *movieFolder = RtspRecordSession::getRecordRootPath();
+	//char httpRoot[QTSS_MAX_NAME_LENGTH] = { 0 };
 
-	char httpRoot[QTSS_MAX_NAME_LENGTH] = { 0 };
+	//qtss_sprintf(httpRoot, "%sMP4/%s/", rootdir, inSessionName);
 
-	qtss_sprintf(httpRoot, "%sMP4/%s/", rootdir, inSessionName);
+	//char subDir[QTSS_MAX_NAME_LENGTH] = { 0 };
+	//qtss_sprintf(subDir, "%s/", inSessionName);
 
-	char subDir[QTSS_MAX_NAME_LENGTH] = { 0 };
-	qtss_sprintf(subDir, "%s/", inSessionName);
+	////char rootDir[QTSS_MAX_NAME_LENGTH] = { 0 };
+	////qtss_sprintf(rootDir,"%s/", movieFolder);
+	//qtss_sprintf(folder, "%sMP4/%s/", movieFolder, subDir);
+	//vector<FileAttributeInfo> list;
 
-	//char rootDir[QTSS_MAX_NAME_LENGTH] = { 0 };
-	//qtss_sprintf(rootDir,"%s/", movieFolder);
-	qtss_sprintf(folder, "%sMP4/%s/", movieFolder, subDir);
-	vector<FileAttributeInfo> list;
+	//vector<string> machList;
+	//machList.push_back(".mp4");
+	//SearchFileDir *dir = SearchFileDir::getInstance();
+	//UInt32 uIndex = 0;
+	//if (dir->searchFileList(folder, list, machList, false)) {
 
-	vector<string> machList;
-	machList.push_back(".mp4");
-	SearchFileDir *dir = SearchFileDir::getInstance();
-	UInt32 uIndex = 0;
-	if (dir->searchFileList(folder, list, machList, false)) {
+	//	for (auto iter : list) {
+	//		if (iter.file_info.st_mtime >= startTime && iter.file_info.st_ctime <= endTime) {
+	//			EasyDarwinRecordSession session;
+	//			session.index = uIndex;
+	//			session.Name = httpRoot + iter.fileName;
+	//			session.startTime = iter.file_info.st_ctime;
+	//			session.endTime = iter.file_info.st_mtime;
+	//			ack.AddRecord(session);
+	//			uIndex++;
+	//		}
+	//	}
+	//}
 
-		for (auto iter : list) {
-			if (iter.file_info.st_mtime >= startTime && iter.file_info.st_ctime <= endTime) {
-				EasyDarwinRecordSession session;
-				session.index = uIndex;
-				session.Name = httpRoot + iter.fileName;
-				session.startTime = iter.file_info.st_ctime;
-				session.endTime = iter.file_info.st_mtime;
-				ack.AddRecord(session);
-				uIndex++;
-			}
-		}
-	}
+	//char count[16] = { 0 };
+	//sprintf(count, "%d", uIndex);
+	//ack.SetBodyValue(EASY_TAG_SESSION_COUNT, count);
 
-	char count[16] = { 0 };
-	sprintf(count, "%d", uIndex);
-	ack.SetBodyValue(EASY_TAG_SESSION_COUNT, count);
+	//string msg = ack.GetMsg();
 
-	string msg = ack.GetMsg();
-
-	UInt32 theMsgLen = strlen(msg.c_str());
-	char* retMsg = new char[theMsgLen + 1];
-	retMsg[theMsgLen] = '\0';
-	strncpy(retMsg, msg.c_str(), strlen(msg.c_str()));
-	return (void*)retMsg;
-}
+	//UInt32 theMsgLen = strlen(msg.c_str());
+	//char* retMsg = new char[theMsgLen + 1];
+	//retMsg[theMsgLen] = '\0';
+	//strncpy(retMsg, msg.c_str(), strlen(msg.c_str()));
+	//return (void*)retMsg;
+//}

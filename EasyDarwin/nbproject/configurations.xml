@@ -94,12 +94,6 @@
           <itemPath>APIModules/QTSSWebDebugModule/QTSSWebDebugModule.cpp</itemPath>
           <itemPath>APIModules/QTSSWebDebugModule/QTSSWebDebugModule.h</itemPath>
         </logicalFolder>
-        <logicalFolder name="QTSSWebStatsModule"
-                       displayName="QTSSWebStatsModule"
-                       projectFiles="true">
-          <itemPath>APIModules/QTSSWebStatsModule/QTSSWebStatsModule.cpp</itemPath>
-          <itemPath>APIModules/QTSSWebStatsModule/QTSSWebStatsModule.h</itemPath>
-        </logicalFolder>
       </logicalFolder>
       <logicalFolder name="APIStubLib" displayName="APIStubLib" projectFiles="true">
         <itemPath>APIStubLib/QTSS_Private.cpp</itemPath>
@@ -657,16 +651,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="APIModules/QTSSWebStatsModule/QTSSWebStatsModule.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="APIModules/QTSSWebStatsModule/QTSSWebStatsModule.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="APIStubLib/QTSS_Private.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="APIStubLib/QTSS_Private.h" ex="false" tool="3" flavor2="0">
@@ -1034,10 +1018,8 @@
             <pElem>APIModules/QTSSPOSIXFileSysModule</pElem>
             <pElem>APIModules/QTSSAdminModule/</pElem>
             <pElem>APIModules/QTSSReflectorModule/</pElem>
-            <pElem>APIModules/QTSSWebStatsModule/</pElem>
             <pElem>APIModules/QTSSWebDebugModule/</pElem>
             <pElem>APIModules/QTSSFlowControlModule/</pElem>
-            <pElem>APIModules/QTSSMP3StreamingModule/</pElem>
             <pElem>APIModules/EasyHLSModule</pElem>
             <pElem>APIModules/EasyRelayModule</pElem>
             <pElem>Include</pElem>
@@ -1049,6 +1031,8 @@
             <pElem>APIModules/EasyRedisModule</pElem>
             <pElem>../EasyRedisClient</pElem>
             <pElem>../RTSPUtilitiesLib</pElem>
+            <pElem>APIModules/EasyRTMPModule</pElem>
+            <pElem>APIModules/EasyHLSModule</pElem>
           </incDir>
           <incFile>
             <pElem>../Include/PlatformHeader.h</pElem>
@@ -1073,8 +1057,8 @@
             <pElem>../CommonUtilitiesLib/${CND_CONF}</pElem>
             <pElem>../EasyProtocol/EasyProtocol/${CND_CONF}</pElem>
             <pElem>../EasyProtocol/jsoncpp/${CND_CONF}</pElem>
-            <pElem>Lib/${CND_CONF}</pElem>
             <pElem>../EasyRedisClient/${CND_CONF}</pElem>
+            <pElem>Lib</pElem>
           </linkerAddLib>
           <commandLine>-lCommonUtilitiesLib -lpthread -ldl -lstdc++ -lm -lcrypt -lEasyProtocol -ljsoncpp -leasyredisclient</commandLine>
         </linkerTool>
@@ -1346,16 +1330,6 @@
             flavor2="0">
       </item>
       <item path="APIModules/QTSSWebDebugModule/QTSSWebDebugModule.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="APIModules/QTSSWebStatsModule/QTSSWebStatsModule.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="APIModules/QTSSWebStatsModule/QTSSWebStatsModule.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -2042,16 +2016,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="APIModules/QTSSWebStatsModule/QTSSWebStatsModule.cpp"
-            ex="false"
-            tool="1"
-            flavor2="9">
-      </item>
-      <item path="APIModules/QTSSWebStatsModule/QTSSWebStatsModule.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="APIStubLib/QTSS_Private.cpp" ex="false" tool="1" flavor2="9">
       </item>
       <item path="APIStubLib/QTSS_Private.h" ex="false" tool="3" flavor2="0">
@@ -2418,11 +2382,9 @@
             <pElem>APIModules/QTSSPOSIXFileSysModule</pElem>
             <pElem>APIModules/QTSSAdminModule/</pElem>
             <pElem>APIModules/QTSSReflectorModule/</pElem>
-            <pElem>APIModules/QTSSWebStatsModule/</pElem>
             <pElem>APIModules/QTSSWebDebugModule/</pElem>
             <pElem>APIModules/QTSSFlowControlModule/</pElem>
             <pElem>APIModules/QTSSMP3StreamingModule/</pElem>
-            <pElem>APIModules/EasyHLSModule</pElem>
             <pElem>APIModules/EasyRelayModule</pElem>
             <pElem>Include</pElem>
             <pElem>.</pElem>
@@ -2459,6 +2421,7 @@
             <pElem>../EasyProtocol/jsoncpp/${CND_CONF}</pElem>
             <pElem>Lib/x64</pElem>
             <pElem>../EasyRedisClient/${CND_CONF}</pElem>
+            <pElem>Lib</pElem>
           </linkerAddLib>
           <commandLine>-lCommonUtilitiesLib -lpthread -ldl -lstdc++ -lm -lcrypt -lEasyProtocol -ljsoncpp -leasyredisclient</commandLine>
         </linkerTool>
@@ -2730,16 +2693,6 @@
             flavor2="9">
       </item>
       <item path="APIModules/QTSSWebDebugModule/QTSSWebDebugModule.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="APIModules/QTSSWebStatsModule/QTSSWebStatsModule.cpp"
-            ex="false"
-            tool="1"
-            flavor2="9">
-      </item>
-      <item path="APIModules/QTSSWebStatsModule/QTSSWebStatsModule.h"
             ex="false"
             tool="3"
             flavor2="0">

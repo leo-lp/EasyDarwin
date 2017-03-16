@@ -33,7 +33,6 @@
 #include "ReflectorSession.h"
 #include "OSArrayObjectDeleter.h"
 #include "QTSSMemoryDeleter.h"
-#include "OSMemory.h"
 #include "OSRef.h"
 #include "OS.h"
 #include "ResizeableStringFormatter.h"
@@ -100,12 +99,6 @@ static bool   sDefaultAllowNonSDPURLs = true;
 
 static bool   sRTPInfoDisabled = false;
 static bool   sDefaultRTPInfoDisabled = false;
-
-static bool   sHLSOutputEnabled = false;
-static bool   sDefaultHLSOutputEnabled = false;
-
-static bool   sRecordOutputEnabled = false;
-static bool   sDefaultRecordOutputEnabled = false;
 
 static bool   sAnnounceEnabled = true;
 static bool   sDefaultAnnounceEnabled = true;
@@ -426,7 +419,7 @@ char *GetTrimmedKeyWord(char *prefKeyWord)
 	StrPtrLen theKeyWordStr;
 	theRequestPathParser.ConsumeUntil(&theKeyWordStr, kPathDelimiterChar); // stop when we see a / and don't include
 
-	char *keyword = NEW char[theKeyWordStr.Len + 1];
+	char *keyword = new char[theKeyWordStr.Len + 1];
 	::memcpy(keyword, theKeyWordStr.Ptr, theKeyWordStr.Len);
 	keyword[theKeyWordStr.Len] = 0;
 
@@ -445,7 +438,7 @@ void SetMoviesRelativeDir()
 		redirectPath.PutChar(kPathDelimiterChar);
 	redirectPath.Put(sBroadcastsRedirectDir);
 
-	char *newMovieRelativeDir = NEW char[redirectPath.GetBytesWritten() + 1];
+	char *newMovieRelativeDir = new char[redirectPath.GetBytesWritten() + 1];
 	::memcpy(newMovieRelativeDir, redirectPath.GetBufPtr(), redirectPath.GetBytesWritten());
 	newMovieRelativeDir[redirectPath.GetBytesWritten()] = 0;
 
@@ -589,15 +582,6 @@ QTSS_Error RereadPrefs()
 
 	KillCommandPathInList();
 
-	//输出HLS
-	QTSSModuleUtils::GetAttribute(sPrefs, "hls_output_enabled", qtssAttrDataTypeBool16,
-		&sHLSOutputEnabled, &sDefaultHLSOutputEnabled, sizeof(sDefaultHLSOutputEnabled));
-
-	//输出Record
-	QTSSModuleUtils::GetAttribute(sPrefs, "record_output_enabled", qtssAttrDataTypeBool16,
-		&sRecordOutputEnabled, &sDefaultRecordOutputEnabled, sizeof(sDefaultRecordOutputEnabled));
-
-
 	return QTSS_NoErr;
 }
 
@@ -630,11 +614,6 @@ QTSS_Error ProcessRTPData(QTSS_IncomingData_Params* inParams)
 	//qtss_printf("QTSSReflectorModule.cpp:ProcessRTPData    sClientBroadcastSessionAttr=%"   _U32BITARG_   " theSession=%"   _U32BITARG_   " err=%" _S32BITARG_ " \n",sClientBroadcastSessionAttr, theSession,theErr);
 	if (theSession == NULL || theErr != QTSS_NoErr)
 		return QTSS_NoErr;
-
-	if (sHLSOutputEnabled)
-		theSession->StartHLSSession();
-	if (sRecordOutputEnabled)
-		theSession->StartRecordSession();
 
 	// it is a broadcaster session
 	//qtss_printf("QTSSReflectorModule.cpp:is broadcaster session\n");
@@ -1019,7 +998,7 @@ QTSS_Error DoAnnounce(QTSS_StandardRTSP_Params* inParams)
 		//
 		// First time we've been here for this request. Create a buffer for the content body and
 		// shove it in the request.
-		theRequestBody = NEW char[*theContentLenP + 1];
+		theRequestBody = new char[*theContentLenP + 1];
 		memset(theRequestBody, 0, *theContentLenP + 1);
 		theLen = sizeof(theRequestBody);
 		theErr = QTSS_SetValue(inParams->inRTSPRequest, sRequestBodyAttr, 0, &theRequestBody, theLen);// SetValue creates an internal copy.
@@ -1196,6 +1175,7 @@ void DoDescribeAddRequiredSDPLines(QTSS_StandardRTSP_Params* inParams, Reflector
 
 QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParams)
 {
+	UInt32 theRefCount = 0;
 	char *theFileName = NULL;
 	ReflectorSession* theSession = DoSessionSetup(inParams, qtssRTSPReqFileName, false, NULL, &theFileName);
 	OSCharArrayDeleter tempFilePath(theFileName);
@@ -1203,8 +1183,10 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParams)
 	if (theSession == NULL)
 		return QTSS_RequestFailed;
 
+	theRefCount++;
+
 	//	//redis,streamid/serial/channel.sdp,for example "./Movies/\streamid\serial\channel0.sdp"
-	//	if(true)//Don't forget relese ref that used in DoSessionSetup
+	//	if(true)
 	//	{
 	//		//1.get the path
 	//		char* theFileNameStr = NULL;
@@ -1303,6 +1285,9 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParams)
 	checkedSDPContainer.SetSDPBuffer(&editedSDPSPL);
 	if (!checkedSDPContainer.IsSDPBufferValid())
 	{
+		if(theRefCount)
+			sSessionMap->Release(theSession->GetRef());
+
 		return QTSSModuleUtils::SendErrorResponseWithMessage(inParams->inRTSPRequest, qtssUnsupportedMediaType, &sSDPNotValidMessage);
 	}
 
@@ -1337,7 +1322,8 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParams)
 	QTSSModuleUtils::SendDescribeResponse(inParams->inRTSPRequest, inParams->inClientSession,
 		&theDescribeVec[0], 3, sessLen + mediaLen);
 
-	sSessionMap->Release(theSession->GetRef());
+	if (theRefCount)
+		sSessionMap->Release(theSession->GetRef());
 
 #ifdef REFLECTORSESSION_DEBUG
 	qtss_printf("QTSSReflectorModule.cpp:DoDescribe Session =%p refcount=%"   _U32BITARG_   "\n", theSession->GetRef(), theSession->GetRef()->GetRefCount());
@@ -1373,7 +1359,7 @@ bool InfoPortsOK(QTSS_StandardRTSP_Params* inParams, SDPSourceInfo* theInfo, Str
 				char *thePath = inPath->GetAsCString();
 				OSCharArrayDeleter charArrayPathDeleter(thePath);
 
-				char *thePathPort = NEW char[inPath->Len + 32];
+				char *thePathPort = new char[inPath->Len + 32];
 				OSCharArrayDeleter charArrayPathPortDeleter(thePathPort);
 
 				qtss_sprintf(thePathPort, "%s:%s", thePath, thePort);
@@ -1426,7 +1412,7 @@ ReflectorSession* FindOrCreateSession(StrPtrLen* inName, QTSS_StandardRTSP_Param
 		if (theFileData.Len <= 0)
 			return NULL;
 
-		SDPSourceInfo* theInfo = NEW SDPSourceInfo(theFileData.Ptr, theFileData.Len); // will make a copy
+		SDPSourceInfo* theInfo = new SDPSourceInfo(theFileData.Ptr, theFileData.Len); // will make a copy
 
 		if (!theInfo->IsReflectable())
 		{
@@ -1458,7 +1444,7 @@ ReflectorSession* FindOrCreateSession(StrPtrLen* inName, QTSS_StandardRTSP_Param
 		if (isPush)
 			theSetupFlag |= ReflectorSession::kIsPushSession;
 
-		theSession = NEW ReflectorSession(inName, inChannel);
+		theSession = new ReflectorSession(inName, inChannel);
 		if (theSession == NULL)
 		{
 			return NULL;
@@ -1473,6 +1459,7 @@ ReflectorSession* FindOrCreateSession(StrPtrLen* inName, QTSS_StandardRTSP_Param
 		{
 			//delete theSession;
 			CSdpCache::GetInstance()->eraseSdpMap(theSession->GetSourceID()->Ptr);
+			theSession->DelRedisLive();
 			theSession->Signal(Task::kKillEvent);
 			return NULL;
 		}
@@ -1491,51 +1478,61 @@ ReflectorSession* FindOrCreateSession(StrPtrLen* inName, QTSS_StandardRTSP_Param
 	}
 	else
 	{
+#ifdef REFLECTORSESSION_DEBUG
+		qtss_printf("QTSSReflectorModule.cpp:FindOrCreateSession Session =%p refcount=%"   _U32BITARG_   "\n", theSessionRef, theSessionRef->GetRefCount());
+#endif
 		// Check if broadcast is allowed before doing anything else
 		// At this point we know it is a definitely a reflector session
 		// It is either incoming automatic broadcast setup or a client setup to view broadcast
 		// In either case, verify whether the broadcast is allowed, and send forbidden response
 		// back
-		if (!AllowBroadcast(inParams->inRTSPRequest))
+		do
 		{
-			(void)QTSSModuleUtils::SendErrorResponseWithMessage(inParams->inRTSPRequest, qtssClientForbidden, &sBroadcastNotAllowed);
-			return NULL;
-		}
-
-		if (foundSessionPtr)
-			*foundSessionPtr = true;
-
-		StrPtrLen theFileData;
-
-		if (inData == NULL)
-			(void)QTSSModuleUtils::ReadEntireFile(inPath.Ptr, &theFileData);
-		OSCharArrayDeleter charArrayDeleter(theFileData.Ptr);
-
-		if (theFileData.Len <= 0)
-			return NULL;
-
-		SDPSourceInfo* theInfo = NEW SDPSourceInfo(theFileData.Ptr, theFileData.Len);
-		if (theInfo == NULL)
-			return NULL;
-
-		if (!InfoPortsOK(inParams, theInfo, &inPath))
-		{
-			delete theInfo;
-			return NULL;
-		}
-
-		delete theInfo;
-
-		theSession = (ReflectorSession*)theSessionRef->GetObject();
-		if (isPush && theSession && !(theSession->IsSetup()))
-		{
-			UInt32 theSetupFlag = ReflectorSession::kMarkSetup | ReflectorSession::kIsPushSession;
-			QTSS_Error theErr = theSession->SetupReflectorSession(NULL, inParams, theSetupFlag);
-			if (theErr != QTSS_NoErr)
+			if (!AllowBroadcast(inParams->inRTSPRequest))
 			{
-				return NULL;
+				(void)QTSSModuleUtils::SendErrorResponseWithMessage(inParams->inRTSPRequest, qtssClientForbidden, &sBroadcastNotAllowed);
+				break;
 			}
-		}
+
+			if (foundSessionPtr)
+				*foundSessionPtr = true;
+
+			StrPtrLen theFileData;
+
+			if (inData == NULL)
+				(void)QTSSModuleUtils::ReadEntireFile(inPath.Ptr, &theFileData);
+			OSCharArrayDeleter charArrayDeleter(theFileData.Ptr);
+
+			if (theFileData.Len <= 0)
+				break;
+
+			SDPSourceInfo* theInfo = new SDPSourceInfo(theFileData.Ptr, theFileData.Len);
+			if (theInfo == NULL)
+				break;
+
+			if (!InfoPortsOK(inParams, theInfo, &inPath))
+			{
+				delete theInfo;
+				break;
+			}
+
+			delete theInfo;
+
+			theSession = (ReflectorSession*)theSessionRef->GetObject();
+			if (isPush && theSession && !(theSession->IsSetup()))
+			{
+				UInt32 theSetupFlag = ReflectorSession::kMarkSetup | ReflectorSession::kIsPushSession;
+				QTSS_Error theErr = theSession->SetupReflectorSession(NULL, inParams, theSetupFlag);
+				if (theErr != QTSS_NoErr)
+				{
+					theSession =  NULL;
+					break;
+				}
+			}			;
+		} while (0);
+
+		if (theSession == NULL)
+			sSessionMap->Release(theSessionRef);
 	}
 
 	Assert(theSession != NULL);
@@ -1550,6 +1547,9 @@ ReflectorSession* FindOrCreateSession(StrPtrLen* inName, QTSS_StandardRTSP_Param
 // ONLY call when performing a setup.
 void DeleteReflectorPushSession(QTSS_StandardRTSP_Params* inParams, ReflectorSession* theSession, bool foundSession)
 {
+	if(theSession)
+		sSessionMap->Release(theSession->GetRef());
+
 	ReflectorSession* stopSessionProcessing = NULL;
 	QTSS_Error theErr = QTSS_SetValue(inParams->inClientSession, sClientBroadcastSessionAttr, 0, &stopSessionProcessing, sizeof(stopSessionProcessing));
 	Assert(theErr == QTSS_NoErr);
@@ -1564,6 +1564,7 @@ void DeleteReflectorPushSession(QTSS_StandardRTSP_Params* inParams, ReflectorSes
 		sSessionMap->UnRegister(theSessionRef);// we had an error while setting up-- don't let anyone get the session
 		//delete theSession;
 		CSdpCache::GetInstance()->eraseSdpMap(theSession->GetSourceID()->Ptr);
+		theSession->DelRedisLive();
 		theSession->Signal(Task::kKillEvent);
 	}
 }
@@ -1616,7 +1617,7 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params* inParams)
 			if (theSession == NULL)
 				return QTSS_RequestFailed;
 
-			RTPSessionOutput* theNewOutput = NEW RTPSessionOutput(inParams->inClientSession, theSession, sServerPrefs, sStreamCookieAttr);
+			RTPSessionOutput* theNewOutput = new RTPSessionOutput(inParams->inClientSession, theSession, sServerPrefs, sStreamCookieAttr);
 			theSession->AddOutput(theNewOutput, true);
 			(void)QTSS_SetValue(inParams->inClientSession, sOutputAttr, 0, &theNewOutput, sizeof(theNewOutput));
 		}
@@ -1629,6 +1630,7 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params* inParams)
 				theSession = DoSessionSetup(inParams, qtssRTSPReqFileName, isPush, &foundSession);
 				if (theSession == NULL)
 					return QTSS_RequestFailed;
+
 			}
 			else
 			{
@@ -2103,10 +2105,6 @@ QTSS_Error DestroySession(QTSS_ClientSessionClosing_Params* inParams)
 		//qtss_printf("QTSSReflectorModule.cpp:DestroySession broadcaster theSession=%"   _U32BITARG_   "\n", (UInt32) theSession);
 		theSession->RemoveSessionFromOutput(inParams->inClientSession);
 
-		if (sHLSOutputEnabled)
-			theSession->StopHLSSession();
-		if (sRecordOutputEnabled)
-			theSession->StopRecordSession();
 		RemoveOutput(NULL, theSession, killClients);
 	}
 	else // 客户端
@@ -2188,6 +2186,8 @@ void RemoveOutput(ReflectorOutput* inOutput, ReflectorSession* theSession, bool 
 				sSessionMap->UnRegister(theSessionRef);
 				//delete theSession;
 				CSdpCache::GetInstance()->eraseSdpMap(theSession->GetSourceID()->Ptr);
+				theSession->DelRedisLive();
+
 				theSession->Signal(Task::kKillEvent);
 			}
 		}

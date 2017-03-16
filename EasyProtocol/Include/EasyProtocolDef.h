@@ -158,8 +158,14 @@
 #define EASY_TAG_CONFIG_SERVICE_WAN_IP					"ServiceWanIP"
 #define EASY_TAG_CONFIG_SERVICE_L_WAN_IP				"servicewanip"
 
+#define EASY_TAG_CONFIG_SNAP_LOCAL_PATH					"SnapLocalPath"
+#define EASY_TAG_CONFIG_SNAP_WEB_PATH					"SnapWebPath"
+
 #define EASY_TAG_CONFIG_RTSP_LAN_PORT					"RTSPLanPort"
 #define	EASY_TAG_CONFIG_RTSP_WAN_PORT					"RTSPWanPort"
+
+#define EASY_TAG_CONFIG_RTMP_LAN_PORT					"RTMPLanPort"
+#define EASY_TAG_CONFIG_RTMP_WAN_PORT					"RTMPWanPort"
 
 #define EASY_TAG_CONFIG_CHANNEL_SNAP_INTERVAL			"ChannelSnapInterval"
 #define EASY_TAG_CONFIG_CHANNEL_L_SNAP_INTERVAL			"channelsnapinterval"
@@ -169,6 +175,7 @@
 
 #define EASY_TAG_CONFIG_NGINX_WEB_PATH					"NginxWebPath"
 #define EASY_TAG_CONFIG_NGINX_L_WEB_PATH				"nginxwebpath"
+
 #define EASY_TAG_CONFIG_NGINX_RTMP_PATH					"NginxRTMPPath"
 #define EASY_TAG_CONFIG_NGINX_L_RTMP_PATH				"nginxrtmppath"
 
@@ -226,6 +233,7 @@
 #define EASY_TAG_HTTP_METHOD							"Method"
 #define EASY_TAG_HTTP_GET								"GET"
 #define EASY_TAG_HTTP_POST								"POST"
+#define EASY_TAG_IS_READY								"IsReady"
 
 /*!
 \}
@@ -302,6 +310,9 @@
 #define MSG_SC_SERVER_TOUCH_PLAY_RECORD_ACK					0x1019
 
 #define MSG_SC_SERVER_USAGES_ACK							0x101a
+
+#define MSG_SC_START_STREAM_ACK								0x101b
+#define MSG_SC_STOP_STREAM_ACK								0x101c
 
 #define MSG_SC_START_HLS_ACK								0xeee0
 #define MSG_SC_HLS_SESSION_LIST_ACK							0xeee1
